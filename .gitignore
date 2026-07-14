@@ -1,0 +1,36 @@
+# SBOM-Laufzeit-Ausgaben / runtime output
+sbom-output/
+**/sbom-output/
+
+# Test-Artefakte / test artifacts
+tests/.venv/
+tests/__pycache__/
+tests/test-results/
+tests/.pytest_cache/
+tests/report.html
+tests/test-results/
+tests/*.log
+
+# Python
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.venv/
+venv/
+
+# OS / IDE
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+*.swp
+*.swo
+
+# Temporaere Pakete / temporary packages
+*.zip
+!docs/**/*.zip
+
+# Secrets
+.env
+*.pem
+*.key

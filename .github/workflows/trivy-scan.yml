@@ -1,0 +1,69 @@
+name: Trivy Scan
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main, Development]
+    paths:
+      - '**.py'
+      - '**.ps1'
+      - 'tests/requirements.txt'
+      - 'security/requirements.txt'
+      - '.github/workflows/trivy-scan.yml'
+
+permissions:
+  contents: write
+  security-events: write
+
+jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL,HIGH,MEDIUM
+          ignore-unfixed: true
+          format: json
+          output: security/reports/trivy-report.json
+
+      - name: Trivy Python dependencies (tests)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: tests/requirements.txt
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          format: table
+
+      - name: Generate Markdown summary
+        run: |
+          pip install -q -r security/requirements.txt || true
+          python security/parse_trivy_report.py security/reports/trivy-report.json || echo "Trivy parser skipped"
+
+      - name: Upload Trivy report artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-report
+          path: |
+            security/reports/trivy-report.json
+            security/reports/trivy_report.md
+
+      - name: Commit Trivy reports
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f security/reports/trivy-report.json security/reports/trivy_report.md 2>/dev/null || true
+          git diff --cached --quiet && exit 0
+          git commit -m "security: Trivy scan report $(date -u +%Y-%m-%d)"
+          git push

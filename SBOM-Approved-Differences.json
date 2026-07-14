@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "comment": "Genehmigte Versionsunterschiede / Approved version differences",
+  "rules": [
+    {
+      "id": "example-edge",
+      "name": "Microsoft Edge",
+      "match": "exact",
+      "anyVersion": true,
+      "comment": "Beispiel: Browser-Updates automatisch genehmigt / Example: browser updates auto-approved"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-01-01T00:00:00Z",
+  "repository": "SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows",
+  "dependencies_scanned": 0,
+  "vulnerabilities_found": 0,
+  "high_severity_count": 0,
+  "dependencies": [],
+  "vulnerabilities": []
+}

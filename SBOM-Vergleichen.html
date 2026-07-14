@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SCHUNK SBOM Vergleich -/- SBOM Compare</title>
+<!-- PRELOAD -->
+<style>
+:root{
+  --bg:#eef1f5;--card:#fff;--border:#c8cdd3;--accent:#0d6efd;
+  --green:#28a745;--orange:#fd7e14;--purple:#6f42c1;--red:#dc3545;--gray:#6c757d;
+  --text:#212529;--muted:#6c757d;
+  --col-left:34%;--col-mid:8%;--col-right:34%;--col-gap:12%;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.45;min-height:100vh}
+header{background:linear-gradient(135deg,#1a3a5c,#0d6efd);color:#fff;padding:1rem 1.2rem 1.1rem;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+header h1{font-size:1.35rem;font-weight:700}
+header .sub{font-size:.82rem;opacity:.88;margin-top:.2rem}
+.toolbar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;padding:.75rem 1.2rem;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.toolbar input[type=search],.toolbar input[type=text],.toolbar select{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:.82rem}
+.toolbar input[type=search]{min-width:220px;flex:1}
+.btn{padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:.8rem;white-space:nowrap}
+.btn:hover{background:#f0f6ff;border-color:var(--accent)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#0b5ed7}
+.btn-sm{padding:3px 8px;font-size:.72rem}
+.filter-group{display:flex;gap:4px;flex-wrap:wrap}
+.fchip{padding:4px 10px;border-radius:20px;border:2px solid transparent;cursor:pointer;font-size:.75rem;font-weight:600;background:#f1f3f5;user-select:none}
+.fchip.active{box-shadow:0 0 0 2px #fff,0 0 0 4px currentColor}
+.fchip[data-f=unchanged]{color:var(--green)}.fchip[data-f=unchanged].active{background:#d4edda}
+.fchip[data-f=version-changed]{color:var(--orange)}.fchip[data-f=version-changed].active{background:#ffe5cc}
+.fchip[data-f=approved]{color:var(--purple)}.fchip[data-f=approved].active{background:#e2d9f3}
+.fchip[data-f=added]{color:var(--red)}.fchip[data-f=added].active{background:#f8d7da}
+.fchip[data-f=removed]{color:var(--gray)}.fchip[data-f=removed].active{background:#e2e3e5}
+.stats{display:flex;gap:.5rem;flex-wrap:wrap;margin-left:auto}
+.stat{padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:700;background:#f8f9fa;border:1px solid var(--border)}
+.stat b{margin-right:4px}
+.layout{display:grid;grid-template-columns:1fr 340px;gap:0;min-height:calc(100vh - 180px)}
+.main{overflow:auto;padding:0}
+.side{background:var(--card);border-left:1px solid var(--border);padding:1rem;overflow:auto;max-height:calc(100vh - 140px);position:sticky;top:58px}
+.side h3{font-size:.95rem;margin-bottom:.6rem;color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:.3rem}
+.side p.hint{font-size:.75rem;color:var(--muted);margin-bottom:.8rem}
+.rule-list{list-style:none;max-height:320px;overflow:auto;border:1px solid var(--border);border-radius:6px;margin-bottom:.8rem}
+.rule-list li{padding:8px 10px;border-bottom:1px solid var(--border);font-size:.78rem}
+.rule-list li:last-child{border-bottom:none}
+.rule-list .rname{font-weight:600}
+.rule-list .rmeta{color:var(--muted);font-size:.7rem;margin-top:2px}
+.rule-actions{margin-top:4px}
+.picker{background:var(--card);margin:1rem;border:1px solid var(--border);border-radius:10px;padding:1.2rem}
+.picker h2{font-size:1rem;margin-bottom:.8rem;color:var(--accent)}
+.picker-row{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:.8rem;align-items:flex-end}
+.picker-row label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;font-weight:600;flex:1;min-width:240px}
+.picker-row input[type=file]{font-size:.78rem}
+.legend{display:flex;flex-wrap:wrap;gap:.8rem;padding:.6rem 1.2rem;background:#fff;border-bottom:1px solid var(--border);font-size:.78rem}
+.leg-item{display:flex;align-items:center;gap:6px}
+.lamp{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:2px solid rgba(0,0,0,.12)}
+.lamp-lg{width:22px;height:22px}
+.compare-head{display:grid;grid-template-columns:var(--col-left) var(--col-mid) var(--col-right);gap:2%;padding:.55rem 1.2rem;background:#dfe3e8;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;z-index:10;border-bottom:2px solid var(--border)}
+.compare-row{display:grid;grid-template-columns:var(--col-left) var(--col-mid) var(--col-right);gap:2%;padding:.5rem 1.2rem;border-bottom:1px solid var(--border);background:var(--card);align-items:stretch;font-size:.8rem}
+.compare-row:hover{background:#f8fbff}
+.compare-row.hidden{display:none}
+.cell-left,.cell-right{padding:6px 8px;border-radius:6px;min-height:52px}
+.cell-left{background:#fafbfc;border:1px solid #e9ecef}
+.cell-right{background:#fafbfc;border:1px solid #e9ecef}
+.cell-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:4px}
+.cell-empty{opacity:.35;font-style:italic;color:var(--muted)}
+.cname{font-weight:600;margin-bottom:2px;word-break:break-word}
+.cver{font-family:Consolas,monospace;font-size:.78rem}
+.cver.diff{background:#fff3cd;padding:1px 4px;border-radius:3px}
+.cmeta{color:var(--muted);font-size:.7rem;margin-top:2px}
+.ctype{display:inline-block;padding:1px 6px;border-radius:4px;background:#e9ecef;font-size:.68rem;margin-bottom:3px}
+.status-unchanged .lamp{background:var(--green)}
+.status-version-changed .lamp{background:var(--orange)}
+.status-approved .lamp{background:var(--purple)}
+.status-added .lamp{background:var(--red)}
+.status-added .cell-right{border-color:#f5c2c7;background:#fff5f5}
+.status-removed .lamp{background:var(--gray)}
+.status-removed .cell-left{border-color:#ced4da;background:#f1f3f5}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:10px;padding:1.2rem;max-width:480px;width:92%;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal h3{margin-bottom:.8rem}
+.modal label{display:block;font-size:.8rem;font-weight:600;margin:.5rem 0 .2rem}
+.modal input,.modal textarea{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:.82rem}
+.modal textarea{min-height:60px;resize:vertical}
+.modal-actions{display:flex;gap:.5rem;margin-top:1rem;justify-content:flex-end}
+.lang-bar{margin-left:.5rem;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border-radius:10px;padding:4px 10px;font-size:.75rem}
+.lang-bar button{background:transparent;border:none;color:#fff;cursor:pointer;font-weight:700;opacity:.6}
+.lang-bar button.active{opacity:1;text-decoration:underline}
+[data-en]{display:none}
+body.en [data-de]{display:none}
+body.en [data-en]{display:inline}
+body.en h1 [data-de],body.en h2 [data-de],body.en h3 [data-de]{display:none}
+body.en h1 [data-en],body.en h2 [data-en],body.en h3 [data-en]{display:block}
+h1 [data-en],h2 [data-en],h3 [data-en]{display:none}
+body.en h1 [data-en],body.en h2 [data-en],body.en h3 [data-en]{display:inline}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.side{position:static;max-height:none;border-left:none;border-top:1px solid var(--border)}}
+@media print{.toolbar,.side,.picker,.modal-bg,.lang-bar{display:none!important}.compare-row{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+  <h1><span data-de>SCHUNK SBOM Vergleich</span><span data-en>SCHUNK SBOM Compare</span></h1>
+  <div class="sub" id="metaLine">CRA / BSI TR-03183-2 &middot; CycloneDX 1.6 &middot; TIA-Style Diff</div>
+</header>
+
+<div id="picker" class="picker">
+  <h2><span data-de>SBOM-Dateien laden</span><span data-en>Load SBOM files</span></h2>
+  <div class="picker-row">
+    <label><span data-de>Quelle 1 (Baseline / Alt)</span><span data-en>Source 1 (Baseline / Old)</span>
+      <input type="file" id="file1" accept=".json,.cdx.json,application/json"></label>
+    <label><span data-de>Quelle 2 (Neu)</span><span data-en>Source 2 (New)</span>
+      <input type="file" id="file2" accept=".json,.cdx.json,application/json"></label>
+    <label><span data-de>Genehmigungen (optional)</span><span data-en>Approvals (optional)</span>
+      <input type="file" id="fileApproved" accept=".json,application/json"></label>
+  </div>
+  <button class="btn btn-primary" id="btnLoad" type="button"><span data-de>Vergleich starten</span><span data-en>Start compare</span></button>
+</div>
+
+<div class="legend" id="legend" style="display:none">
+  <div class="leg-item"><span class="lamp" style="background:var(--green)"></span><span data-de>Unveraendert</span><span data-en>Unchanged</span></div>
+  <div class="leg-item"><span class="lamp" style="background:var(--orange)"></span><span data-de>Versionsunterschied</span><span data-en>Version difference</span></div>
+  <div class="leg-item"><span class="lamp" style="background:var(--purple)"></span><span data-de>Genehmigt</span><span data-en>Approved</span></div>
+  <div class="leg-item"><span class="lamp" style="background:var(--red)"></span><span data-de>Neu hinzugefuegt</span><span data-en>Newly added</span></div>
+  <div class="leg-item"><span class="lamp" style="background:var(--gray)"></span><span data-de>Entfernt</span><span data-en>Removed</span></div>
+</div>
+
+<div class="toolbar" id="toolbar" style="display:none">
+  <input type="search" id="search" placeholder="Suchen... / Search...">
+  <div class="filter-group" id="filters">
+    <span class="fchip active" data-f="all"><span data-de>Alle</span><span data-en>All</span></span>
+    <span class="fchip" data-f="unchanged"><span data-de>Unveraendert</span><span data-en>Unchanged</span></span>
+    <span class="fchip" data-f="version-changed"><span data-de>Version</span><span data-en>Version</span></span>
+    <span class="fchip" data-f="approved"><span data-de>Genehmigt</span><span data-en>Approved</span></span>
+    <span class="fchip" data-f="added"><span data-de>Neu</span><span data-en>New</span></span>
+    <span class="fchip" data-f="removed"><span data-de>Entfernt</span><span data-en>Removed</span></span>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="lang-bar">
+    <button type="button" id="langDe" class="active">DE</button><span>|</span><button type="button" id="langEn">EN</button>
+  </div>
+</div>
+
+<div class="layout" id="layout" style="display:none">
+  <div class="main">
+    <div class="compare-head">
+      <div id="headLeft"><span data-de>Quelle 1</span><span data-en>Source 1</span></div>
+      <div><span data-de>Status</span><span data-en>Status</span></div>
+      <div id="headRight"><span data-de>Quelle 2</span><span data-en>Source 2</span></div>
+    </div>
+    <div id="rows"></div>
+  </div>
+  <aside class="side">
+    <h3><span data-de>Genehmigungen pflegen</span><span data-en>Manage approvals</span></h3>
+    <p class="hint" data-de>Orange Zeilen koennen als genehmigt markiert werden. Regeln exportieren und in SBOM-Approved-Differences.json speichern.</p>
+    <p class="hint" data-en>Mark orange rows as approved. Export rules and save to SBOM-Approved-Differences.json.</p>
+    <ul class="rule-list" id="ruleList"></ul>
+    <button class="btn btn-sm" type="button" id="btnAddRule"><span data-de>+ Regel manuell</span><span data-en>+ Rule manually</span></button>
+    <button class="btn btn-sm" type="button" id="btnImportRules"><span data-de>Import JSON</span><span data-en>Import JSON</span></button>
+    <button class="btn btn-primary btn-sm" type="button" id="btnExportRules" style="margin-top:6px"><span data-de>Export JSON</span><span data-en>Export JSON</span></button>
+    <input type="file" id="importHidden" accept=".json" style="display:none">
+  </aside>
+</div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3 id="modalTitle"><span data-de>Genehmigung hinzufuegen</span><span data-en>Add approval</span></h3>
+    <label><span data-de>Softwarename</span><span data-en>Software name</span><input id="mName"></label>
+    <label><span data-de>Von Version (Quelle 1)</span><span data-en>From version (source 1)</span><input id="mFrom" placeholder="*"></label>
+    <label><span data-de>Nach Version (Quelle 2)</span><span data-en>To version (source 2)</span><input id="mTo" placeholder="*"></label>
+    <label><input type="checkbox" id="mAny"> <span data-de>Alle Versionen genehmigen</span><span data-en>Approve any version</span></label>
+    <label><span data-de>Kommentar</span><span data-en>Comment</span><textarea id="mComment"></textarea></label>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="mCancel"><span data-de>Abbrechen</span><span data-en>Cancel</span></button>
+      <button class="btn btn-primary" type="button" id="mSave"><span data-de>Speichern</span><span data-en>Save</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const STORAGE_KEY = 'sbom-approved-rules-v1';
+let bom1=null, bom2=null, approved={version:1,comment:'',rules:[]}, rows=[], activeFilter='all', meta={};
+
+function $(id){return document.getElementById(id);}
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+function componentKey(c){
+  return (c.type||'unknown')+'|'+(c.name||'').trim().toLowerCase();
+}
+
+function nameMatches(name, pattern, match){
+  if(!name||!pattern) return false;
+  const n=name.trim(), p=pattern.trim();
+  if(match==='wildcard'||p.includes('*')){
+    const rx=new RegExp('^'+p.replace(/[.+?^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*')+'$','i');
+    return rx.test(n);
+  }
+  return n.toLowerCase()===p.toLowerCase();
+}
+
+function versionMatches(ver, pattern){
+  if(!pattern||pattern==='*'||pattern==='') return true;
+  const v=(ver||'').trim();
+  if(pattern.includes('*')){
+    const rx=new RegExp('^'+pattern.replace(/[.+?^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*')+'$','i');
+    return rx.test(v);
+  }
+  return v.toLowerCase()===pattern.toLowerCase();
+}
+
+function isApproved(left, right){
+  if(!left||!right) return false;
+  const name=left.name, v1=left.version||'', v2=right.version||'';
+  for(const rule of approved.rules||[]){
+    if(!nameMatches(name, rule.name, rule.match)) continue;
+    if(rule.anyVersion) return true;
+    if(versionMatches(v1, rule.fromVersion)&&versionMatches(v2, rule.toVersion)) return true;
+  }
+  return false;
+}
+
+function compare(){
+  const map1=new Map(), map2=new Map();
+  (bom1.components||[]).forEach(c=>map1.set(componentKey(c),c));
+  (bom2.components||[]).forEach(c=>map2.set(componentKey(c),c));
+  const keys=[...new Set([...map1.keys(),...map2.keys()])].sort();
+  rows=keys.map(key=>{
+    const left=map1.get(key)||null, right=map2.get(key)||null;
+    let status;
+    if(left&&right){
+      const v1=(left.version||'').trim(), v2=(right.version||'').trim();
+      if(v1===v2) status='unchanged';
+      else if(isApproved(left,right)) status='approved';
+      else status='version-changed';
+    } else if(!left&&right) status='added';
+    else status='removed';
+    const name=(left||right).name||key;
+    const type=(left||right).type||'';
+    return {key,left,right,status,name,type};
+  });
+}
+
+function renderCell(c, side, other, status){
+  if(!c) return '<div class="cell-'+side+' cell-empty">—</div>';
+  const ver=(c.version||'').trim();
+  const otherVer=other?(other.version||'').trim():'';
+  const diff=status==='version-changed'||status==='approved';
+  const verCls=diff&&ver!==otherVer?' cver diff':' cver';
+  const sup=c.supplier&&c.supplier.name?c.supplier.name:'';
+  return '<div class="cell-'+side+'">'+
+    '<span class="ctype">'+esc(c.type)+'</span>'+
+    '<div class="cname">'+esc(c.name)+'</div>'+
+    '<div class="'+verCls.trim()+'">'+esc(ver||'—')+'</div>'+
+    (sup?'<div class="cmeta">'+esc(sup)+'</div>':'')+
+  '</div>';
+}
+
+function statusLabel(st){
+  const de={unchanged:'OK',approved:'Genehmigt','version-changed':'Version',added:'Neu',removed:'Weg'};
+  const en={unchanged:'OK',approved:'Approved','version-changed':'Version',added:'New',removed:'Removed'};
+  return document.body.classList.contains('en')?en[st]:de[st];
+}
+
+function renderRows(){
+  const q=($('search').value||'').toLowerCase();
+  const html=rows.map((r,i)=>{
+    if(activeFilter!=='all'&&r.status!==activeFilter) return '';
+    const hay=(r.name+' '+(r.left?.version||'')+' '+(r.right?.version||'')).toLowerCase();
+    if(q&&!hay.includes(q)) return '';
+    const approveBtn=(r.status==='version-changed')
+      ?'<button class="btn btn-sm" data-approve="'+i+'" type="button">'+(document.body.classList.contains('en')?'Approve':'Genehmigen')+'</button>':'';
+    return '<div class="compare-row status-'+r.status+'" data-status="'+r.status+'">'+
+      renderCell(r.left,'left',r.right,r.status)+
+      '<div class="cell-mid"><span class="lamp lamp-lg" title="'+statusLabel(r.status)+'"></span>'+
+      '<span style="font-size:.68rem;font-weight:700">'+statusLabel(r.status)+'</span>'+approveBtn+'</div>'+
+      renderCell(r.right,'right',r.left,r.status)+
+    '</div>';
+  }).join('');
+  $('rows').innerHTML=html||'<div style="padding:2rem;text-align:center;color:#6c757d">—</div>';
+  $('rows').querySelectorAll('[data-approve]').forEach(btn=>{
+    btn.onclick=()=>openApproveModal(parseInt(btn.dataset.approve,10));
+  });
+}
+
+function renderStats(){
+  const c={unchanged:0,'version-changed':0,approved:0,added:0,removed:0};
+  rows.forEach(r=>c[r.status]=(c[r.status]||0)+1);
+  $('stats').innerHTML=
+    '<span class="stat" style="color:var(--green)"><b>'+c.unchanged+'</b>OK</span>'+
+    '<span class="stat" style="color:var(--orange)"><b>'+c['version-changed']+'</b>Ver</span>'+
+    '<span class="stat" style="color:var(--purple)"><b>'+c.approved+'</b>Appr</span>'+
+    '<span class="stat" style="color:var(--red)"><b>'+c.added+'</b>+</span>'+
+    '<span class="stat" style="color:var(--gray)"><b>'+c.removed+'</b>-</span>';
+}
+
+function renderRules(){
+  const list=$('ruleList');
+  const rules=approved.rules||[];
+  if(!rules.length){
+    list.innerHTML='<li style="color:#6c757d;font-style:italic">'+(document.body.classList.contains('en')?'No rules yet':'Keine Regeln')+'</li>';
+    return;
+  }
+  list.innerHTML=rules.map((r,idx)=>
+    '<li><div class="rname">'+esc(r.name)+'</div>'+
+    '<div class="rmeta">'+(r.anyVersion?'* → *':esc(r.fromVersion||'*')+' → '+esc(r.toVersion||'*'))+
+    (r.comment?' · '+esc(r.comment):'')+'</div>'+
+    '<div class="rule-actions"><button class="btn btn-sm" data-del="'+idx+'" type="button">'+(document.body.classList.contains('en')?'Delete':'Loeschen')+'</button></div></li>'
+  ).join('');
+  list.querySelectorAll('[data-del]').forEach(b=>{
+    b.onclick=()=>{approved.rules.splice(parseInt(b.dataset.del,10),1);saveRulesLocal();compare();renderAll();};
+  });
+}
+
+function renderAll(){
+  renderStats(); renderRows(); renderRules();
+}
+
+function updateMeta(){
+  if(!meta.source1) return;
+  const l=meta.source1, r=meta.source2;
+  $('headLeft').innerHTML='<span data-de>Quelle 1</span><span data-en>Source 1</span><br><small>'+esc(l.file)+' ('+l.componentCount+')</small>';
+  $('headRight').innerHTML='<span data-de>Quelle 2</span><span data-en>Source 2</span><br><small>'+esc(r.file)+' ('+r.componentCount+')</small>';
+  $('metaLine').textContent=(l.host||'?')+' vs '+(r.host||'?')+' · '+l.file+' ↔ '+r.file;
+}
+
+function showResults(){
+  $('picker').style.display='none';
+  $('legend').style.display='flex';
+  $('toolbar').style.display='flex';
+  $('layout').style.display='grid';
+}
+
+function loadFromPreload(data){
+  bom1=data.bom1; bom2=data.bom2;
+  if(data.approved) approved=JSON.parse(JSON.stringify(data.approved));
+  meta=data.meta||{};
+  mergeLocalRules();
+  compare(); updateMeta(); showResults(); renderAll();
+}
+
+function mergeLocalRules(){
+  try{
+    const loc=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+    if(loc&&loc.rules){
+      const ids=new Set((approved.rules||[]).map(r=>r.id||r.name));
+      loc.rules.forEach(r=>{if(!ids.has(r.id||r.name)){(approved.rules=approved.rules||[]).push(r);}});
+    }
+  }catch(e){}
+}
+
+function saveRulesLocal(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({version:1,rules:approved.rules||[]}));
+}
+
+function readFile(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>{try{res(JSON.parse(fr.result));}catch(e){rej(e);}};
+    fr.onerror=rej;
+    fr.readAsText(file);
+  });
+}
+
+async function loadFromPickers(){
+  const f1=$('file1').files[0], f2=$('file2').files[0];
+  if(!f1||!f2){alert(document.body.classList.contains('en')?'Select both SBOM files.':'Beide SBOM-Dateien waehlen.');return;}
+  bom1=await readFile(f1); bom2=await readFile(f2);
+  if($('fileApproved').files[0]) approved=await readFile($('fileApproved').files[0]);
+  meta={source1:{file:f1.name,componentCount:(bom1.components||[]).length,host:''},
+        source2:{file:f2.name,componentCount:(bom2.components||[]).length,host:''}};
+  mergeLocalRules(); compare(); updateMeta(); showResults(); renderAll();
+}
+
+function openApproveModal(idx){
+  const r=rows[idx];
+  if(!r||!r.left) return;
+  $('mName').value=r.left.name||'';
+  $('mFrom').value=r.left.version||'';
+  $('mTo').value=r.right?r.right.version||'':'';
+  $('mAny').checked=false;
+  $('mComment').value='';
+  $('modal').classList.add('open');
+  $('mSave').onclick=()=>{
+    const rule={id:'r-'+Date.now(),name:$('mName').value.trim(),match:'exact',
+      fromVersion:$('mFrom').value.trim()||'*',toVersion:$('mTo').value.trim()||'*',
+      anyVersion:$('mAny').checked,comment:$('mComment').value.trim()};
+    if(!rule.name){alert('Name');return;}
+    approved.rules=approved.rules||[]; approved.rules.push(rule);
+    saveRulesLocal(); $('modal').classList.remove('open');
+    compare(); renderAll();
+  };
+}
+
+$('mCancel').onclick=()=>$('modal').classList.remove('open');
+$('btnLoad').onclick=loadFromPickers;
+$('search').oninput=renderRows;
+
+$('filters').querySelectorAll('.fchip').forEach(chip=>{
+  chip.onclick=()=>{
+    $('filters').querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    activeFilter=chip.dataset.f;
+    renderRows();
+  };
+});
+
+$('btnAddRule').onclick=()=>{
+  $('mName').value='';$('mFrom').value='*';$('mTo').value='*';$('mAny').checked=false;$('mComment').value='';
+  $('modal').classList.add('open');
+  $('mSave').onclick=()=>{
+    const rule={id:'r-'+Date.now(),name:$('mName').value.trim(),match:$('mName').value.includes('*')?'wildcard':'exact',
+      fromVersion:$('mFrom').value.trim()||'*',toVersion:$('mTo').value.trim()||'*',
+      anyVersion:$('mAny').checked,comment:$('mComment').value.trim()};
+    if(!rule.name) return;
+    approved.rules=approved.rules||[]; approved.rules.push(rule);
+    saveRulesLocal(); $('modal').classList.remove('open'); compare(); renderAll();
+  };
+};
+
+$('btnExportRules').onclick=()=>{
+  const out={version:1,comment:'Genehmigte Versionsunterschiede / Approved version differences',rules:approved.rules||[]};
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='SBOM-Approved-Differences.json';
+  a.click();
+};
+
+$('btnImportRules').onclick=()=>$('importHidden').click();
+$('importHidden').onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const data=await readFile(f);
+  if(data.rules) approved.rules=data.rules;
+  saveRulesLocal(); compare(); renderAll(); e.target.value='';
+};
+
+$('langDe').onclick=()=>{document.body.classList.remove('en');$('langDe').classList.add('active');$('langEn').classList.remove('active');renderAll();};
+$('langEn').onclick=()=>{document.body.classList.add('en');$('langEn').classList.add('active');$('langDe').classList.remove('active');renderAll();};
+
+if(window.__PRELOADED__) loadFromPreload(window.__PRELOADED__);
+})();
+</script>
+</body>
+</html>

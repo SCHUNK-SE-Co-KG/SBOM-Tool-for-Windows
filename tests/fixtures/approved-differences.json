@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "comment": "Test fixture / Test-Fixture",
+  "rules": [
+    {
+      "id": "rule-7zip",
+      "name": "7-Zip 24.08",
+      "match": "exact",
+      "fromVersion": "24.08",
+      "toVersion": "24.09",
+      "comment": "Genehmigtes Patch-Update / Approved patch update"
+    }
+  ]
+}
