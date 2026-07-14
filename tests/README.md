@@ -20,7 +20,7 @@ run_tests.bat
 pip install -r tests/requirements.txt -r ../security/requirements.txt
 python -m pytest tests/test_security.py -v
 
-powershell -ExecutionPolicy Bypass -Command "Install-Module Pester -Force; Invoke-Pester tests/test_sbom.ps1"
+powershell -ExecutionPolicy Bypass -Command "Install-Module Pester -RequiredVersion 5.7.1 -Force -SkipPublisherCheck -Scope CurrentUser; Import-Module Pester -RequiredVersion 5.7.1 -Force; $c = New-PesterConfiguration; $c.Run.Path = 'tests/test_sbom.Tests.ps1'; Invoke-Pester -Configuration $c"
 ```
 
 ## Fixtures

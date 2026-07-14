@@ -30,10 +30,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Pester tests (Windows PowerShell 5.1)
+      - name: Install and run Pester 5
         shell: powershell
         run: |
-          Write-Host "Repo root: $env:GITHUB_WORKSPACE"
-          $result = Invoke-Pester -Script tests/test_sbom.ps1 -PassThru
+          Write-Host "Workspace: $env:GITHUB_WORKSPACE"
+          [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser | Out-Null
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -RequiredVersion 5.7.1 -Force -SkipPublisherCheck -Scope CurrentUser
+          Import-Module Pester -RequiredVersion 5.7.1 -Force
+
+          $config = New-PesterConfiguration
+          $config.Run.Path = 'tests/test_sbom.Tests.ps1'
+          $config.Run.PassThru = $true
+          $config.Output.Verbosity = 'Detailed'
+          $result = Invoke-Pester -Configuration $config
           Write-Host "Passed: $($result.PassedCount) Failed: $($result.FailedCount)"
           if ($result.FailedCount -gt 0) { exit 1 }
