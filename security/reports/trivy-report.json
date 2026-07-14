@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 2,
+  "Trivy": {
+    "Version": "0.69.3"
+  },
+  "ReportID": "019f60e5-eb38-7bf9-abf5-7f8f560ac105",
+  "CreatedAt": "2026-07-14T13:51:48.536787426Z",
+  "ArtifactID": "sha256:7cb7478679c7c3f1644613ca885b1d2ce380588ad9e91764c7e8e92e5b290457",
+  "ArtifactName": ".",
+  "ArtifactType": "repository",
+  "Metadata": {
+    "RepoURL": "https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows",
+    "Branch": "main",
+    "Commit": "fd0e80b7242e8fed39f3abe2b497a0f12a8a9a70",
+    "CommitMsg": "fix: complete Trivy workflow on vulnerability findings\n\nUpgrade trivy-action to 0.35.0, pin requests\u003e=2.32.2, set exit-code 0 so report steps always run, remove redundant second scan.\n\nCo-authored-by: Cursor \u003ccursoragent@cursor.com\u003e",
+    "Author": "Daniel Merkler \u003cdaniel.merkler@de.schunk.com\u003e",
+    "Committer": "Daniel Merkler \u003cdaniel.merkler@de.schunk.com\u003e"
+  }
+}
