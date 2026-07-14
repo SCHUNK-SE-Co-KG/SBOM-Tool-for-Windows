@@ -3,16 +3,16 @@
   "Trivy": {
     "Version": "0.69.3"
   },
-  "ReportID": "019f60e9-a6ba-7b84-9757-0d236068a2a1",
-  "CreatedAt": "2026-07-14T13:55:53.146756567Z",
-  "ArtifactID": "sha256:a7024c2e461fd8e1a5e2f752b763af4666191fdfa6b911dad7b45c1db7bea950",
+  "ReportID": "019f60ee-809d-7f0e-803a-d6b910e50d21",
+  "CreatedAt": "2026-07-14T14:01:11.069989174Z",
+  "ArtifactID": "sha256:8160fd9ba08740c1c3de4361f6888cc344e490435f400ce717230fe4cafccc58",
   "ArtifactName": ".",
   "ArtifactType": "repository",
   "Metadata": {
     "RepoURL": "https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows",
     "Branch": "main",
-    "Commit": "e6a95a0193b4a65349274d97dfdf6f3d799cecde",
-    "CommitMsg": "fix: Windows CI tests use PowerShell 5.1 and GITHUB_WORKSPACE\n\nPester 5 on pwsh left PSScriptRoot empty so all path checks failed. Use built-in Pester 3 on windows-latest and resolve repo root via GITHUB_WORKSPACE.\n\nCo-authored-by: Cursor \u003ccursoragent@cursor.com\u003e",
+    "Commit": "14c8465e3efd7ff7868ce8eae82576cafaebdf58",
+    "CommitMsg": "fix: pin Pester 5.7.1 on Windows runner for reliable CI\n\nwindows-latest may resolve Invoke-Pester to legacy 3.4 without explicit import. Use test_sbom.Tests.ps1 with BeforeAll and GITHUB_WORKSPACE. Harden git push steps with pull --rebase.\n\nCo-authored-by: Cursor \u003ccursoragent@cursor.com\u003e",
     "Author": "Daniel Merkler \u003cdaniel.merkler@de.schunk.com\u003e",
     "Committer": "Daniel Merkler \u003cdaniel.merkler@de.schunk.com\u003e"
   }
