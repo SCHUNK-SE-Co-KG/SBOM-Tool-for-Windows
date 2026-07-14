@@ -23,8 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Prepare report directory
+        run: mkdir -p security/reports
+
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: fs
           scan-ref: .
@@ -33,21 +36,18 @@ jobs:
           ignore-unfixed: true
           format: json
           output: security/reports/trivy-report.json
-
-      - name: Trivy Python dependencies (tests)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: fs
-          scan-ref: tests/requirements.txt
-          scanners: vuln
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          format: table
+          exit-code: '0'
 
       - name: Generate Markdown summary
+        if: always()
         run: |
           pip install -q -r security/requirements.txt || true
-          python security/parse_trivy_report.py security/reports/trivy-report.json || echo "Trivy parser skipped"
+          if [ -f security/reports/trivy-report.json ]; then
+            python security/parse_trivy_report.py security/reports/trivy-report.json
+          else
+            echo "No Trivy JSON report found, skipping Markdown generation."
+            exit 0
+          fi
 
       - name: Upload Trivy report artifact
         uses: actions/upload-artifact@v4
@@ -57,9 +57,10 @@ jobs:
           path: |
             security/reports/trivy-report.json
             security/reports/trivy_report.md
+          if-no-files-found: ignore
 
       - name: Commit Trivy reports
-        if: github.ref == 'refs/heads/main'
+        if: always() && github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
