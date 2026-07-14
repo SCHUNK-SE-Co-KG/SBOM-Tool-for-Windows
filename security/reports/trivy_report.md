@@ -1,6 +1,6 @@
 # Trivy Scan Report – SBOM Tool for Windows
 
-**Generated:** 2026-07-14T13:51:51Z
+**Generated:** 2026-07-14T13:55:56Z
 **Source:** `trivy-report.json`
 **Total findings:** 0
 **High/Critical:** 0
