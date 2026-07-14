@@ -1,4 +1,10 @@
-$RepoRoot = Split-Path -Parent $PSScriptRoot
+$RepoRoot = if ($env:GITHUB_WORKSPACE) {
+    $env:GITHUB_WORKSPACE
+} elseif ($PSScriptRoot) {
+    (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+} else {
+    (Get-Location).Path
+}
 
 Describe 'Script inventory' {
     It 'contains main PowerShell scripts' {
@@ -20,7 +26,7 @@ Describe 'PowerShell syntax' {
         $tokens = $null
         $errors = $null
         [void][System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
-        $errors | Should Be $null
+        @($errors).Count | Should Be 0
     }
 
     It 'Compare-WindowsSBOM.ps1 parses without errors' {
@@ -28,7 +34,7 @@ Describe 'PowerShell syntax' {
         $tokens = $null
         $errors = $null
         [void][System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
-        $errors | Should Be $null
+        @($errors).Count | Should Be 0
     }
 }
 
@@ -50,7 +56,7 @@ Describe 'SBOM compare report' {
         $report = Get-ChildItem $outDir -Filter 'sbom-compare-*.html' |
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
-        ($report -ne $null) | Should Be $true
+        ($null -ne $report) | Should Be $true
         $content = Get-Content $report.FullName -Raw
         ($content -match '__PRELOADED__') | Should Be $true
         ($content -match '7-Zip 24.08') | Should Be $true
