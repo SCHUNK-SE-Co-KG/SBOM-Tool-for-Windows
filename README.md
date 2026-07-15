@@ -17,7 +17,7 @@ Developed by **SCHUNK Electronic Solutions GmbH** for internal CRA compliance wo
 - [CRA context](#cra-context)
 - [Features](#features)
 - [Quick start](#quick-start)
-- [SBOM comparison (TIA-style)](#sbom-comparison-tia-style)
+- [SBOM comparison](#sbom-comparison)
 - [Project structure](#project-structure)
 - [Output files](#output-files)
 - [Parameters](#parameters)
@@ -50,7 +50,7 @@ Developed by **SCHUNK Electronic Solutions GmbH** for internal CRA compliance wo
 | **CycloneDX 1.6** | BSI TR-03183-2 v2.1.0 compliant JSON output |
 | **HTML report** | Sortable tables, search, DE/EN language toggle |
 | **Text summary** | Compact statistics (bilingual DE/EN) |
-| **SBOM compare** | TIA-style 3-column diff with traffic-light status |
+| **SBOM compare** | 3-column diff with traffic-light status |
 | **Approved differences** | Maintainable JSON rules for accepted version changes |
 | **Portable** | Copy folder to USB — no install required |
 | **License database** | ~370 known products mapped to SPDX IDs |
@@ -95,7 +95,7 @@ Output appears in `.\sbom-output\` (3 files per run: `.cdx.json`, `.html`, `.txt
 
 ---
 
-## SBOM comparison (TIA-style)
+## SBOM comparison
 
 Compare an old baseline SBOM with a new one:
 

@@ -137,6 +137,9 @@ if ($html -match '<!-- PRELOAD -->') {
 } else {
     $html = $html -replace '</head>', "$inject`n</head>"
 }
+# Reports in sbom-output/ need relative path to assets
+$html = $html -replace 'src="assets/', 'src="../assets/'
+$html = $html -replace 'href="assets/', 'href="../assets/'
 
 if (-not (Test-Path $OutputDir)) {
     New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null

@@ -5,7 +5,7 @@ title SCHUNK SBOM Vergleich -/- SBOM Compare
 echo.
 echo   ============================================================
 echo    SCHUNK SBOM Vergleich -/- SBOM Compare
-echo    TIA-Style Diff (Quelle 1 ^| Ampel ^| Quelle 2)
+echo    3-Spalten-Diff (Quelle 1 ^| Ampel ^| Quelle 2)
 echo   ============================================================
 echo.
 echo   Waehle zwei CycloneDX-Dateien (.cdx.json)...

@@ -1326,66 +1326,104 @@ $h = [System.Text.StringBuilder]::new(256000)
 <head>
 <meta charset="utf-8">
 <title>SBOM $hostname - $(Get-Date -Format 'yyyy-MM-dd')</title>
+<link rel="icon" type="image/png" href="../assets/logos/SCHUNK_Signet.png">
 <style>
-:root{--bg:#f8f9fa;--card:#fff;--border:#dee2e6;--accent:#0d6efd;--accent2:#198754;--text:#212529;--muted:#6c757d;--warn:#ffc107}
+:root{
+  --schunk-primary:#003D6A;--schunk-accent:#009EE0;--schunk-cta:#F26B43;
+  --bg:#F0F2F5;--card:#fff;--border:#E3E3E3;--accent:#003D6A;--accent2:#009263;
+  --text:#212529;--muted:#44546A;--warn:#D8BA22;
+  --header-bg:linear-gradient(135deg,#003D6A 0%,#002847 100%);
+  --row-hover:#f0f8fc;--th-bg:#003D6A;--th-text:#fff;
+  --font:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+}
+html.dark{
+  --bg:#0B1E2E;--card:#12324A;--border:#1E4466;--accent:#009EE0;--accent2:#00B37A;
+  --text:#F0F4F8;--muted:#A4B8C8;--header-bg:linear-gradient(135deg,#0B1E2E 0%,#061018 100%);
+  --row-hover:#163A55;--th-bg:#009EE0;--th-text:#fff;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;padding:1.5rem}
-h1{font-size:1.6rem;margin-bottom:.3rem}
-h2{font-size:1.15rem;margin:1.8rem 0 .6rem;padding-bottom:.3rem;border-bottom:2px solid var(--accent);color:var(--accent)}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;padding:0 0 1.5rem;transition:background .25s,color .25s}
+.site-header{background:var(--header-bg);color:#fff;padding:.85rem 1.5rem 1rem;box-shadow:0 2px 12px rgba(0,0,0,.2);display:flex;flex-wrap:wrap;align-items:center;gap:1rem;margin-bottom:1.2rem}
+.header-brand{display:flex;align-items:center;gap:1rem;flex:1;min-width:220px}
+.header-brand img.logo-full{height:40px;width:auto}
+.header-brand h1{font-size:1.35rem;font-weight:700;line-height:1.2}
+.header-sub{font-size:.78rem;opacity:.9;margin-top:.15rem}
+.content{padding:0 1.5rem}
+.top-controls{display:flex;flex-wrap:wrap;gap:.55rem;margin-left:auto}
+.control-pill{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:5px 10px;font-size:.72rem;font-weight:600}
+.control-label{opacity:.85}
+.toggle-btn{display:flex;align-items:center;gap:8px;background:transparent;border:none;cursor:pointer;padding:0;color:#fff}
+.toggle-track{width:46px;height:26px;background:rgba(0,0,0,.25);border-radius:13px;position:relative;border:1px solid rgba(255,255,255,.25)}
+.toggle-knob{position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+body.en .lang-track .toggle-knob,html.dark .theme-track .toggle-knob{transform:translateX(20px)}
+.lang-opt,.theme-opt{opacity:.45;font-weight:700;user-select:none}
+.lang-opt.active,.theme-opt.active{opacity:1}
+h2{font-size:1.15rem;margin:1.8rem 0 .6rem;padding-bottom:.3rem;border-bottom:2px solid var(--schunk-accent);color:var(--accent)}
 .meta{color:var(--muted);font-size:.85rem;margin-bottom:1.2rem}
 .stats{display:flex;gap:.8rem;flex-wrap:wrap;margin:1rem 0}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.7rem 1.1rem;min-width:130px;text-align:center}
-.stat b{display:block;font-size:1.5rem;color:var(--accent)}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.7rem 1.1rem;min-width:130px;text-align:center;box-shadow:0 1px 4px rgba(0,61,106,.06)}
+.stat b{display:block;font-size:1.5rem;color:var(--schunk-accent)}
+html:not(.dark) .stat b{color:var(--schunk-primary)}
 .stat span{font-size:.78rem;color:var(--muted)}
 .badge{display:inline-block;padding:1px 7px;border-radius:4px;font-size:.75rem;font-weight:600}
-.badge-ok{background:#d1e7dd;color:#0f5132} .badge-warn{background:#fff3cd;color:#664d03} .badge-na{background:#e2e3e5;color:#41464b}
+.badge-ok{background:rgba(0,146,99,.15);color:#009263}
+.badge-warn{background:rgba(216,186,34,.2);color:#8a7010}
+html.dark .badge-warn{color:#E8C547}
+.badge-na{background:rgba(68,84,106,.15);color:var(--muted)}
 table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:.5rem;font-size:.82rem}
-th{background:#e9ecef;position:sticky;top:0;padding:6px 8px;text-align:left;cursor:pointer;user-select:none;white-space:nowrap}
-th:hover{background:#d3d6da}
-th::after{content:' \2195';color:#adb5bd;font-size:.7rem}
+th{background:var(--th-bg);color:var(--th-text);position:sticky;top:0;padding:6px 8px;text-align:left;cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{filter:brightness(1.08)}
+th::after{content:' \2195';opacity:.6;font-size:.7rem}
 td{padding:5px 8px;border-top:1px solid var(--border);word-break:break-word}
-tr:hover{background:#f0f6ff}
+tr:hover{background:var(--row-hover)}
 .os-tbl td:first-child{font-weight:600;width:180px;color:var(--muted)}
-input[type=search]{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:.85rem}
+input[type=search]{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:.85rem;background:var(--card);color:var(--text)}
 .section{margin-bottom:2rem}
 .hash{font-family:Consolas,monospace;font-size:.7rem;word-break:break-all;max-width:280px;display:inline-block}
-footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted)}
-.lang-bar{position:fixed;top:12px;right:16px;z-index:9999;display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--accent);border-radius:14px;padding:9px 16px;box-shadow:0 4px 24px rgba(13,110,253,.28),0 1px 4px rgba(0,0,0,.08)}
-.lang-bar:hover{box-shadow:0 6px 28px rgba(13,110,253,.35),0 2px 6px rgba(0,0,0,.1)}
-.lang-label{font-size:.82rem;font-weight:700;color:var(--accent);white-space:nowrap;letter-spacing:.02em}
-.lang-switch{display:flex;align-items:center;gap:10px;background:transparent;border:none;cursor:pointer;padding:2px 0}
-.lang-switch:hover .switch-track{border-color:var(--accent)}
-.flag{font-size:1.55rem;line-height:1;opacity:.35;filter:grayscale(40%);transition:opacity .2s,transform .2s,filter .2s;user-select:none}
-.flag.active{opacity:1;filter:none;transform:scale(1.12)}
-.switch-track{width:54px;height:30px;background:#dee2e6;border-radius:15px;position:relative;transition:background .25s,border-color .2s;border:2px solid #adb5bd;flex-shrink:0}
-body.en .switch-track{background:#cfe2ff;border-color:var(--accent)}
-.switch-knob{position:absolute;top:2px;left:2px;width:22px;height:22px;background:linear-gradient(180deg,#3d8bfd,#0d6efd);border-radius:50%;transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:0 2px 6px rgba(13,110,253,.45)}
-body.en .switch-knob{transform:translateX(24px)}
+footer{margin-top:2rem;padding:1rem 1.5rem 0;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted)}
 [data-en]{display:none}
 body.en [data-de]{display:none}
 body.en [data-en]{display:inline}
 body.en h2[data-de]{display:none}
 body.en h2[data-en]{display:block}
 h2[data-en]{display:none}
-@media print{body{padding:0;font-size:9pt}th{background:#eee!important}input,.meta a,.lang-bar{display:none}.stat{border:1px solid #ccc}}
+@media print{body{padding:0;font-size:9pt}th{background:#003D6A!important;color:#fff!important}input,.meta a,.top-controls{display:none}.stat{border:1px solid #ccc}html.dark{--bg:#fff;--card:#fff;--text:#000}}
 </style>
 </head>
 <body>
-<div class="lang-bar" id="langBar" title="Sprache / Language">
-<span class="lang-label"><span data-de>Sprache</span><span data-en>Language</span></span>
-<button class="lang-switch" type="button" onclick="toggleLang()" aria-label="Sprache umschalten / Toggle language">
-<span class="flag active" id="flagDe" title="Deutsch">&#127465;&#127466;</span>
-<span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
-<span class="flag" id="flagEn" title="English">&#127468;&#127463;</span>
+<header class="site-header">
+<div class="header-brand">
+<img class="logo-full" src="../assets/logos/SCHUNK_Logo_Dark.svg" alt="SCHUNK">
+<div>
+<h1><span data-de>Windows SBOM</span><span data-en>Windows SBOM</span></h1>
+<div class="header-sub">CRA / BSI TR-03183-2 v2.1.0 &middot; CycloneDX 1.6</div>
+</div>
+</div>
+<div class="top-controls">
+<div class="control-pill">
+<span class="control-label"><span data-de>Design</span><span data-en>Theme</span></span>
+<button class="toggle-btn" type="button" onclick="toggleTheme()" aria-label="Dark Mode">
+<span class="theme-opt active" id="themeLight">&#9728;</span>
+<span class="toggle-track theme-track"><span class="toggle-knob"></span></span>
+<span class="theme-opt" id="themeDark">&#9790;</span>
 </button>
 </div>
-<h1>SCHUNK Windows SBOM</h1>
+<div class="control-pill">
+<span class="control-label"><span data-de>Sprache</span><span data-en>Language</span></span>
+<button class="toggle-btn" type="button" onclick="toggleLang()" aria-label="Sprache / Language">
+<span class="lang-opt active" id="flagDe">DE</span>
+<span class="toggle-track lang-track"><span class="toggle-knob"></span></span>
+<span class="lang-opt" id="flagEn">EN</span>
+</button>
+</div>
+</div>
+</header>
+<div class="content">
 <div class="meta">
-CRA / BSI TR-03183-2 v2.1.0 &middot; CycloneDX 1.6 &middot;
 <span data-de>Erstellt:</span><span data-en>Created:</span> $timestamp &middot; Host: <b>$hostname</b><br>
 <span data-de>Organisation:</span><span data-en>Organization:</span> <b>$(HtmlEnc $CompanyInfo.Name)</b> &middot;
 $(HtmlEnc $CompanyInfo.Street), $(HtmlEnc $CompanyInfo.City) &middot;
-<a href="$(HtmlEnc $CompanyInfo.URL)">$(HtmlEnc $CompanyInfo.URL)</a>
+<a href="$(HtmlEnc $CompanyInfo.URL)" style="color:var(--schunk-accent)">$(HtmlEnc $CompanyInfo.URL)</a>
 </div>
 
 <div class="stats">
@@ -1495,6 +1533,7 @@ SCHUNK Windows SBOM Generator v3.0 &middot; $(HtmlEnc $CompanyInfo.Name) &middot
 <span data-de>Generiert</span><span data-en>Generated</span> $timestamp<br>
 CycloneDX: <code>$(Split-Path $cdxFile -Leaf)</code> &middot; HTML: <code>$(Split-Path $htmlFile -Leaf)</code>
 </footer>
+</div>
 <script>
 function filterTable(input,tblId){var f=input.value.toLowerCase(),rows=document.getElementById(tblId).tBodies[0].rows;
 for(var i=0;i<rows.length;i++){rows[i].style.display=rows[i].textContent.toLowerCase().indexOf(f)>-1?'':'none';}}
@@ -1509,11 +1548,21 @@ var isEn=document.body.classList.contains('en');
 document.getElementById('flagDe').classList.toggle('active',!isEn);
 document.getElementById('flagEn').classList.toggle('active',isEn);
 try{localStorage.setItem('sbom-lang',isEn?'en':'de');}catch(e){}}
+function toggleTheme(){
+var dark=!document.documentElement.classList.contains('dark');
+document.documentElement.classList.toggle('dark',dark);
+document.getElementById('themeLight').classList.toggle('active',!dark);
+document.getElementById('themeDark').classList.toggle('active',dark);
+try{localStorage.setItem('sbom-theme',dark?'dark':'light');}catch(e){}}
 (function(){
 try{var l=localStorage.getItem('sbom-lang');
 if(l==='en'){document.body.classList.add('en');
 document.getElementById('flagDe').classList.remove('active');
-document.getElementById('flagEn').classList.add('active');}}catch(e){}})();
+document.getElementById('flagEn').classList.add('active');}
+var t=localStorage.getItem('sbom-theme');
+if(t==='dark'){document.documentElement.classList.add('dark');
+document.getElementById('themeLight').classList.remove('active');
+document.getElementById('themeDark').classList.add('active');}}catch(e){}})();
 </script>
 </body></html>
 "@)
