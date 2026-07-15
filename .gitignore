@@ -2,6 +2,11 @@
 sbom-output/
 **/sbom-output/
 
+# Generierte Security-Reports (CI-Artefakte) / generated security reports
+security/reports/*.json
+security/reports/*.md
+!security/reports/.gitkeep
+
 # Test-Artefakte / test artifacts
 tests/.venv/
 tests/__pycache__/

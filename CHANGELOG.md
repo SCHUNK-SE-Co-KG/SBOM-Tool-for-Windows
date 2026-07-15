@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0] - 2026-07-15
+
+### Added
+- User guides: `docs/ANLEITUNG.de.md` and `docs/GUIDE.en.md`
+
+### Removed
+- `SBOM-Vergleichen.cmd` — compare via `SBOM-Vergleichen.html` in the browser
+- `SBOM-Win-Create.cmd` — duplicate launcher (use `SBOM-Erstellen.cmd`)
+- shields.io release badge (broken on private repos)
+- Committed security scan reports (now CI artifacts only)
+
+### Changed
+- README slimmed down; user docs linked at the top
+
 ## [1.1.1] - 2026-07-15
 
 ### Removed
