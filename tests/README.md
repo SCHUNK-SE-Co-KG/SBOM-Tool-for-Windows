@@ -35,4 +35,4 @@ powershell -ExecutionPolicy Bypass -Command "Install-Module Pester -RequiredVers
 
 GitHub Actions workflow `.github/workflows/tests.yml` runs on `ubuntu-latest` (Python, CycloneDX, tool SBOM) and `windows-latest` (Pester, PSScriptAnalyzer).
 
-Other workflows: Trivy, CVE-Scan, CodeQL, Release (see root README).
+Other workflows: Trivy, CVE-Scan, Release (see root README).

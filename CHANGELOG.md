@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.1] - 2026-07-15
+
+### Removed
+- CodeQL workflow (required GitHub Advanced Security / Code Security settings)
+- Dependabot configuration (required org/repo Dependabot settings)
+- CVE monthly report workflow (required issue creation and write permissions)
+- GitHub settings guide (`docs/GITHUB-SETTINGS.de.md`)
+- Auto-commits of scan reports to the repository
+
+### Changed
+- CVE and Trivy workflows upload reports as **Actions artifacts** only
+- Tests workflow: tool SBOM as artifact only (read-only `GITHUB_TOKEN`)
+
 ## [1.1.0] - 2026-07-15
 
 ### Added

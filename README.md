@@ -7,7 +7,6 @@
 ![Tests](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/tests.yml/badge.svg?branch=main)
 ![Trivy Scan](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/trivy-scan.yml/badge.svg?branch=main)
 ![CVE-Scan](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/cve-scan.yml/badge.svg?branch=main)
-![CodeQL](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/codeql.yml/badge.svg?branch=main)
 ![Release](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/release.yml/badge.svg)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE.svg)
 ![CycloneDX](https://img.shields.io/badge/CycloneDX-1.6-green.svg)
@@ -122,7 +121,7 @@ Or double-click `SBOM-Vergleichen.cmd` and select both files.
 
 ```
 SBOM-Tool-for-Windows/
-├── Get-WindowsSBOM.ps1           # Main SBOM generator (v1.1)
+├── Get-WindowsSBOM.ps1           # Main SBOM generator
 ├── Compare-WindowsSBOM.ps1       # Compare two CycloneDX files → HTML report
 ├── SBOM-Erstellen.cmd            # One-click full scan (DE)
 ├── SBOM-Win-Create.cmd             # One-click full scan (EN filename)
@@ -139,7 +138,7 @@ SBOM-Tool-for-Windows/
 │   ├── generate_tool_sbom.py       # Tool dependency SBOM (CycloneDX 1.6)
 │   ├── parse_trivy_report.py       # Trivy JSON → Markdown
 │   └── reports/                    # Generated scan reports
-└── .github/workflows/              # CI: tests, CVE scan, Trivy, CodeQL, release
+└── .github/workflows/              # CI: tests, CVE scan, Trivy, release
 ```
 
 ---
@@ -191,15 +190,12 @@ Automated security scanning — same pattern as [TARATool](https://github.com/SC
 |-----------|-------------|
 | `security/cve_scanner.py` | Python/OSV API scan of test + security dependencies |
 | `security/generate_tool_sbom.py` | CycloneDX 1.6 SBOM of this tool's Python dependencies |
-| `.github/workflows/tests.yml` | Pester, pytest, CycloneDX validation, PSScriptAnalyzer, tool SBOM |
-| `.github/workflows/cve-scan.yml` | Daily scan at 06:00 UTC |
-| `.github/workflows/cve-monthly-report.yml` | Monthly GitHub issue with full report |
-| `.github/workflows/trivy-scan.yml` | Trivy filesystem + pip scan (CRITICAL/HIGH) |
-| `.github/workflows/codeql.yml` | CodeQL static analysis (Python) |
+| `.github/workflows/tests.yml` | Pester, pytest, CycloneDX validation, PSScriptAnalyzer, tool SBOM (artifact) |
+| `.github/workflows/cve-scan.yml` | Daily OSV scan — report as workflow artifact |
+| `.github/workflows/trivy-scan.yml` | Trivy filesystem + pip scan (CRITICAL/HIGH) — report as artifact |
 | `.github/workflows/release.yml` | Portable ZIP on version tags (`v*`) |
-| `.github/dependabot.yml` | Weekly dependency updates (pip, GitHub Actions) |
 
-GitHub security settings (Code Security, Dependabot, branch protection): see [docs/GITHUB-SETTINGS.de.md](docs/GITHUB-SETTINGS.de.md).
+Scan reports are available as **GitHub Actions artifacts** (no repo write permissions or GitHub Security settings required).
 
 ### Manual scan
 
