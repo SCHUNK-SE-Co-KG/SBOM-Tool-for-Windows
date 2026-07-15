@@ -48,8 +48,13 @@ Portable Tools zur SBOM-Erfassung und zum Vergleich auf Windows 10/11 (CRA / BSI
 ### Genehmigte Unterschiede
 
 - Orange Zeilen können als **genehmigt** markiert werden
-- Regeln per **Export JSON** speichern → `SBOM-Approved-Differences.json`
-- Beim nächsten Vergleich diese Datei wieder laden
+- **Export JSON** → Master-Datei `SBOM-Approved-Differences.json`
+- **Import JSON** → ersetzt alle Regeln
+- **Merge JSON** → Regeln aus zweiter Datei anhängen (Duplikate werden übersprungen)
+
+**Master aus mehreren Maschinen:** Person A exportiert Regeln, Person B exportiert Regeln — eine Person lädt ihre Datei, klickt **Merge JSON** und wählt die andere Datei, dann **Export JSON**.
+
+**Manuell in der JSON:** Siehe Kommentar in `SBOM-Approved-Differences.json`. Kurz: `anyVersion: true` = jede Versionsänderung für diesen Softwarenamen gilt als genehmigt (ohne feste Von/Nach-Version).
 
 ---
 

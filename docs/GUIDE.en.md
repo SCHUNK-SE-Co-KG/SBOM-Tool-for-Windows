@@ -48,8 +48,13 @@ Portable tools to generate and compare SBOMs on Windows 10/11 (CRA / BSI TR-0318
 ### Approved differences
 
 - Mark orange rows as **approved**
-- **Export JSON** → save as `SBOM-Approved-Differences.json`
-- Load that file on the next compare run
+- **Export JSON** → master file `SBOM-Approved-Differences.json`
+- **Import JSON** → replaces all rules
+- **Merge JSON** → append rules from another file (skips duplicates)
+
+**Master from several machines:** each person exports rules — load one file, click **Merge JSON**, pick the other file, then **Export JSON**.
+
+**Manual JSON editing:** see the comment in `SBOM-Approved-Differences.json`. Short: `anyVersion: true` = any version change for that software name is approved (no fixed from/to versions).
 
 ---
 

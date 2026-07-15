@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.2] - 2026-07-15
+
+### Added
+- **Merge JSON** in `SBOM-Compare.html` — combine approved-rules files without duplicates
+- Template `SBOM-Approved-Differences.json` documents `anyVersion` and rule fields
+
 ## [1.2.1] - 2026-07-15
 
 ### Changed

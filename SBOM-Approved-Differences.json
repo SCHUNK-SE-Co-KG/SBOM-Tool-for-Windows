@@ -1,13 +1,22 @@
 {
   "version": 1,
-  "comment": "Genehmigte Versionsunterschiede / Approved version differences",
+  "comment": "Genehmigte Versionsunterschiede / Approved version differences. Pro Regel: name (Softwarename), match (exact|wildcard), fromVersion + toVersion (erlaubter Sprung alt→neu), anyVersion (true = jede Versionsänderung für diesen Namen ok — fromVersion/toVersion dann ignorieren), comment (Notiz). Master-Datei: rules[] aus mehreren JSONs zusammenführen oder „Merge JSON“ im Compare-Tool.",
   "rules": [
     {
-      "id": "example-edge",
+      "id": "example-edge-anyversion",
       "name": "Microsoft Edge",
       "match": "exact",
       "anyVersion": true,
-      "comment": "Beispiel: Browser-Updates automatisch genehmigt / Example: browser updates auto-approved"
+      "comment": "anyVersion:true — jeder Versionswechsel von Edge gilt als genehmigt / any version change for Edge is approved"
+    },
+    {
+      "id": "example-7zip-specific",
+      "name": "7-Zip 24.08",
+      "match": "exact",
+      "fromVersion": "24.08",
+      "toVersion": "24.09",
+      "anyVersion": false,
+      "comment": "Nur dieser konkrete Sprung 24.08→24.09 / Only this specific jump 24.08→24.09"
     }
   ]
 }

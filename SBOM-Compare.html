@@ -192,13 +192,15 @@ body.en h1 [data-en],body.en h2 [data-en],body.en h3 [data-en]{display:inline}
   </div>
   <aside class="side">
     <h3><span data-de>Genehmigungen pflegen</span><span data-en>Manage approvals</span></h3>
-    <p class="hint" data-de>Orange Zeilen koennen als genehmigt markiert werden. Regeln exportieren und in SBOM-Approved-Differences.json speichern.</p>
-    <p class="hint" data-en>Mark orange rows as approved. Export rules and save to SBOM-Approved-Differences.json.</p>
+    <p class="hint" data-de>Orange Zeilen koennen als genehmigt markiert werden. Export = Master speichern. Merge JSON = Regeln aus zweiter Datei anhaengen (ohne Duplikate).</p>
+    <p class="hint" data-en>Mark orange rows as approved. Export = save master. Merge JSON = append rules from another file (skips duplicates).</p>
     <ul class="rule-list" id="ruleList"></ul>
     <button class="btn btn-sm" type="button" id="btnAddRule"><span data-de>+ Regel manuell</span><span data-en>+ Rule manually</span></button>
     <button class="btn btn-sm" type="button" id="btnImportRules"><span data-de>Import JSON</span><span data-en>Import JSON</span></button>
+    <button class="btn btn-sm" type="button" id="btnMergeRules"><span data-de>Merge JSON</span><span data-en>Merge JSON</span></button>
     <button class="btn btn-primary btn-sm" type="button" id="btnExportRules" style="margin-top:6px"><span data-de>Export JSON</span><span data-en>Export JSON</span></button>
     <input type="file" id="importHidden" accept=".json" style="display:none">
+    <input type="file" id="mergeHidden" accept=".json" style="display:none">
   </aside>
 </div>
 
@@ -249,6 +251,27 @@ function versionMatches(ver, pattern){
     return rx.test(v);
   }
   return v.toLowerCase()===pattern.toLowerCase();
+}
+
+function ruleKey(r){
+  const name=(r.name||'').trim().toLowerCase();
+  const match=r.match||'exact';
+  if(r.anyVersion) return name+'|'+match+'|any';
+  return name+'|'+match+'|'+(r.fromVersion||'*')+'|'+(r.toVersion||'*');
+}
+
+function mergeRules(incoming){
+  approved.rules=approved.rules||[];
+  const seen=new Set(approved.rules.map(ruleKey));
+  let added=0, skipped=0;
+  (incoming||[]).forEach(r=>{
+    const k=ruleKey(r);
+    if(seen.has(k)){skipped++;return;}
+    seen.add(k);
+    approved.rules.push(r);
+    added++;
+  });
+  return {added, skipped};
 }
 
 function isApproved(left, right){
@@ -475,6 +498,27 @@ $('importHidden').onchange=async e=>{
   const data=await readFile(f);
   if(data.rules) approved.rules=data.rules;
   saveRulesLocal(); compare(); renderAll(); e.target.value='';
+};
+
+$('btnMergeRules').onclick=()=>$('mergeHidden').click();
+$('mergeHidden').onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{
+    const data=await readFile(f);
+    if(!data.rules||!data.rules.length){
+      alert(document.body.classList.contains('en')?'No rules in file.':'Keine Regeln in der Datei.');
+      return;
+    }
+    const {added, skipped}=mergeRules(data.rules);
+    saveRulesLocal(); compare(); renderAll();
+    const msg=document.body.classList.contains('en')
+      ?('Merged: '+added+' added, '+skipped+' skipped (duplicate).')
+      :('Zusammengefuehrt: '+added+' neu, '+skipped+' uebersprungen (Duplikat).');
+    alert(msg);
+  }catch(err){
+    alert(document.body.classList.contains('en')?'Invalid JSON file.':'Ungueltige JSON-Datei.');
+  }
+  e.target.value='';
 };
 
 function setLang(en){
