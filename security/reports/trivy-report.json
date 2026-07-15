@@ -3,17 +3,17 @@
   "Trivy": {
     "Version": "0.70.0"
   },
-  "ReportID": "019f64a2-f070-7922-9c8a-e06aabfd017d",
-  "CreatedAt": "2026-07-15T07:17:07.824600807Z",
-  "ArtifactID": "sha256:cd9e25541dfe1a970802544080e08784b96c7f790ff1d950535eb53f91069850",
+  "ReportID": "019f64b2-bd74-743c-908d-014590e4d120",
+  "CreatedAt": "2026-07-15T07:34:23.348280118Z",
+  "ArtifactID": "sha256:08fe8cfb2cbf9ec9e4d2af33ae5f0231bdfad9ecf7580be3392c8f39e86db5b5",
   "ArtifactName": ".",
   "ArtifactType": "repository",
   "Metadata": {
     "RepoURL": "https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows",
     "Branch": "main",
-    "Commit": "ff51c9eb5bdd8c0f245bc14b3bd60f62edc490e6",
-    "CommitMsg": "security: CVE scan report 2026-07-15",
-    "Author": "github-actions[bot] \u003cgithub-actions[bot]@users.noreply.github.com\u003e",
-    "Committer": "github-actions[bot] \u003cgithub-actions[bot]@users.noreply.github.com\u003e"
+    "Commit": "06d15c6788fba826238c702868ffe41026e48497",
+    "CommitMsg": "feat: SCHUNK corporate UI with light/dark mode for SBOM reports\n\nApply SCHUNK CI colors and logos to the HTML generator and compare tool, add bilingual DE/EN and theme toggles with localStorage, ship logo assets, and remove TIA-style terminology from docs and launchers.\n\nCo-authored-by: Cursor \u003ccursoragent@cursor.com\u003e",
+    "Author": "Daniel Merkler \u003cdaniel.merkler@de.schunk.com\u003e",
+    "Committer": "Daniel Merkler \u003cdaniel.merkler@de.schunk.com\u003e"
   }
 }
