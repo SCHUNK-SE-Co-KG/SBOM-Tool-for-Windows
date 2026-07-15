@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 REPORT_DIR = ROOT / "security" / "reports"
 OUTPUT = REPORT_DIR / "tool-sbom.cdx.json"
+VERSION_FILE = ROOT / "VERSION"
 REQ_FILES = [
     ROOT / "tests" / "requirements.txt",
     ROOT / "security" / "requirements.txt",
@@ -36,6 +37,12 @@ def merge_requirements() -> str:
                 seen.add(key)
                 lines.append(line)
     return "\n".join(lines) + "\n"
+
+
+def tool_version() -> str:
+    if VERSION_FILE.is_file():
+        return VERSION_FILE.read_text(encoding="utf-8").strip()
+    return "1.1.0"
 
 
 def main() -> int:

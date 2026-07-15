@@ -2,6 +2,7 @@
 
 **Portable Software Bill of Materials generator for installed Windows systems — CRA / BSI TR-03183-2 compliant (CycloneDX 1.6)**
 
+![Release](https://img.shields.io/github/v/release/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows?label=Release)
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Tests](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/tests.yml/badge.svg?branch=main)
 ![Trivy Scan](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/trivy-scan.yml/badge.svg?branch=main)
@@ -121,7 +122,7 @@ Or double-click `SBOM-Vergleichen.cmd` and select both files.
 
 ```
 SBOM-Tool-for-Windows/
-├── Get-WindowsSBOM.ps1           # Main SBOM generator (v3.0)
+├── Get-WindowsSBOM.ps1           # Main SBOM generator (v1.1)
 ├── Compare-WindowsSBOM.ps1       # Compare two CycloneDX files → HTML report
 ├── SBOM-Erstellen.cmd            # One-click full scan (DE)
 ├── SBOM-Win-Create.cmd             # One-click full scan (EN filename)
@@ -197,6 +198,8 @@ Automated security scanning — same pattern as [TARATool](https://github.com/SC
 | `.github/workflows/codeql.yml` | CodeQL static analysis (Python) |
 | `.github/workflows/release.yml` | Portable ZIP on version tags (`v*`) |
 | `.github/dependabot.yml` | Weekly dependency updates (pip, GitHub Actions) |
+
+GitHub security settings (Code Security, Dependabot, branch protection): see [docs/GITHUB-SETTINGS.de.md](docs/GITHUB-SETTINGS.de.md).
 
 ### Manual scan
 

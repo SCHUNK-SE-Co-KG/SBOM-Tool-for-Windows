@@ -59,6 +59,8 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$Script:ToolVersion = (Get-Content -Path (Join-Path $PSScriptRoot "VERSION") -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
+if (-not $Script:ToolVersion) { $Script:ToolVersion = "1.1.0" }
 
 # Kulturunabhaengige Formatierung erzwingen (laeuft auf allen Windows-Sprachen)
 # Force culture-independent formatting (works on all Windows language versions)
@@ -1064,7 +1066,7 @@ $metadata = [ordered]@{
         components = @([ordered]@{
             type      = "application"
             name      = "SCHUNK-WindowsSBOM"
-            version   = "3.0.0"
+            version   = $Script:ToolVersion
             supplier  = @{ name = $CompanyInfo.Name; url = @($CompanyInfo.URL) }
         })
     }
@@ -1529,7 +1531,7 @@ if ($drivers.Count -gt 0) {
 # --- Footer ---
 [void]$h.Append(@"
 <footer>
-SCHUNK Windows SBOM Generator v3.0 &middot; $(HtmlEnc $CompanyInfo.Name) &middot;
+SCHUNK Windows SBOM Generator v$Script:ToolVersion &middot; $(HtmlEnc $CompanyInfo.Name) &middot;
 <span data-de>Generiert</span><span data-en>Generated</span> $timestamp<br>
 CycloneDX: <code>$(Split-Path $cdxFile -Leaf)</code> &middot; HTML: <code>$(Split-Path $htmlFile -Leaf)</code>
 </footer>

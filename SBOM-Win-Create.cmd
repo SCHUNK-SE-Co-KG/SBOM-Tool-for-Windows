@@ -3,8 +3,10 @@ chcp 65001 >nul 2>&1
 title SCHUNK Windows SBOM Generator - CRA konform -/- compliant
 
 echo.
+set "TOOLVER=1.1.0"
+if exist "%~dp0VERSION" for /f "usebackq delims=" %%V in ("%~dp0VERSION") do set "TOOLVER=%%V"
 echo   ============================================================
-echo    SCHUNK Windows SBOM Generator v3.0
+echo    SCHUNK Windows SBOM Generator v%TOOLVER%
 echo    CRA / BSI TR-03183-2 v2.1.0 konform -/- compliant
 echo   ============================================================
 echo.
