@@ -21,7 +21,7 @@ jobs:
           ls -lh "SBOM-Tool-for-Windows-${TAG}.zip"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: SBOM-Tool-for-Windows-${{ github.ref_name }}.zip
           generate_release_notes: true
