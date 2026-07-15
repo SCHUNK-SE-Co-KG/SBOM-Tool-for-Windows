@@ -32,7 +32,7 @@ jobs:
         run: python -m pytest tests/test_security.py tests/test_cyclonedx.py -v
 
       - name: Upload tool SBOM artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: tool-sbom
           path: security/reports/tool-sbom.cdx.json
