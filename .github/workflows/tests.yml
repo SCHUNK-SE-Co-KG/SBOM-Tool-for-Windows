@@ -7,6 +7,9 @@ on:
     branches: [main, Development]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   python-tests:
     runs-on: ubuntu-latest
@@ -22,8 +25,29 @@ jobs:
           pip install -r tests/requirements.txt
           pip install -r security/requirements.txt
 
+      - name: Generate tool SBOM
+        run: python security/generate_tool_sbom.py
+
       - name: Run Python tests
-        run: python -m pytest tests/test_security.py -v
+        run: python -m pytest tests/test_security.py tests/test_cyclonedx.py -v
+
+      - name: Upload tool SBOM artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: tool-sbom
+          path: security/reports/tool-sbom.cdx.json
+
+      - name: Commit tool SBOM
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f security/reports/tool-sbom.cdx.json
+          git diff --cached --quiet && exit 0
+          git commit -m "docs: update tool dependency SBOM"
+          git pull --rebase origin main
+          git push
 
   windows-tests:
     runs-on: windows-latest
@@ -47,3 +71,27 @@ jobs:
           $result = Invoke-Pester -Configuration $config
           Write-Host "Passed: $($result.PassedCount) Failed: $($result.FailedCount)"
           if ($result.FailedCount -gt 0) { exit 1 }
+
+      - name: Install PSScriptAnalyzer
+        shell: powershell
+        run: |
+          Install-Module PSScriptAnalyzer -RequiredVersion 1.21.0 -Force -SkipPublisherCheck -Scope CurrentUser
+          Import-Module PSScriptAnalyzer -RequiredVersion 1.21.0 -Force
+
+      - name: Analyze PowerShell scripts
+        shell: powershell
+        run: |
+          $scripts = @(
+            'Get-WindowsSBOM.ps1',
+            'Compare-WindowsSBOM.ps1'
+          )
+          $failed = $false
+          foreach ($script in $scripts) {
+            Write-Host "Analyzing $script ..."
+            $findings = Invoke-ScriptAnalyzer -Path $script -Severity Error
+            if ($findings) {
+              $findings | Format-Table -AutoSize
+              $failed = $true
+            }
+          }
+          if ($failed) { throw 'PSScriptAnalyzer findings detected.' }

@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build portable ZIP
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          git archive --format=zip --output "SBOM-Tool-for-Windows-${TAG}.zip" HEAD
+          ls -lh "SBOM-Tool-for-Windows-${TAG}.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: SBOM-Tool-for-Windows-${{ github.ref_name }}.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false

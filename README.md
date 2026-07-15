@@ -3,6 +3,11 @@
 **Portable Software Bill of Materials generator for installed Windows systems — CRA / BSI TR-03183-2 compliant (CycloneDX 1.6)**
 
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
+![Tests](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/tests.yml/badge.svg?branch=main)
+![Trivy Scan](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/trivy-scan.yml/badge.svg?branch=main)
+![CVE-Scan](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/cve-scan.yml/badge.svg?branch=main)
+![CodeQL](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/codeql.yml/badge.svg?branch=main)
+![Release](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/release.yml/badge.svg)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE.svg)
 ![CycloneDX](https://img.shields.io/badge/CycloneDX-1.6-green.svg)
 
@@ -130,9 +135,10 @@ SBOM-Tool-for-Windows/
 │   └── run_tests.bat
 ├── security/                       # CVE / Trivy tooling
 │   ├── cve_scanner.py              # OSV API scanner
+│   ├── generate_tool_sbom.py       # Tool dependency SBOM (CycloneDX 1.6)
 │   ├── parse_trivy_report.py       # Trivy JSON → Markdown
 │   └── reports/                    # Generated scan reports
-└── .github/workflows/              # CI: tests, CVE scan, Trivy, monthly report
+└── .github/workflows/              # CI: tests, CVE scan, Trivy, CodeQL, release
 ```
 
 ---
@@ -183,9 +189,14 @@ Automated security scanning — same pattern as [TARATool](https://github.com/SC
 | Component | Description |
 |-----------|-------------|
 | `security/cve_scanner.py` | Python/OSV API scan of test + security dependencies |
+| `security/generate_tool_sbom.py` | CycloneDX 1.6 SBOM of this tool's Python dependencies |
+| `.github/workflows/tests.yml` | Pester, pytest, CycloneDX validation, PSScriptAnalyzer, tool SBOM |
 | `.github/workflows/cve-scan.yml` | Daily scan at 06:00 UTC |
 | `.github/workflows/cve-monthly-report.yml` | Monthly GitHub issue with full report |
 | `.github/workflows/trivy-scan.yml` | Trivy filesystem + pip scan (CRITICAL/HIGH) |
+| `.github/workflows/codeql.yml` | CodeQL static analysis (Python) |
+| `.github/workflows/release.yml` | Portable ZIP on version tags (`v*`) |
+| `.github/dependabot.yml` | Weekly dependency updates (pip, GitHub Actions) |
 
 ### Manual scan
 
