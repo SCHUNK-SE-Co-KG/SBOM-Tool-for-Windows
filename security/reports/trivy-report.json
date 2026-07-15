@@ -1,18 +1,18 @@
 {
   "SchemaVersion": 2,
   "Trivy": {
-    "Version": "0.69.3"
+    "Version": "0.70.0"
   },
-  "ReportID": "019f644d-7b8a-78f3-bb94-1e6e56b8d598",
-  "CreatedAt": "2026-07-15T05:43:47.338588586Z",
-  "ArtifactID": "sha256:a424043280d420727c9b336abd89c9a9f54c7fd058751d41497db493df4d9f2f",
+  "ReportID": "019f6452-7d15-7d6b-8ddd-36b4784fb47d",
+  "CreatedAt": "2026-07-15T05:49:15.413881985Z",
+  "ArtifactID": "sha256:fe71d617cc28ba0f662c5f4baddc66d3bc3f480772f31cfe7ebe2ac43aaae8f8",
   "ArtifactName": ".",
   "ArtifactType": "repository",
   "Metadata": {
     "RepoURL": "https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows",
     "Branch": "main",
-    "Commit": "77090447945d9d22c37f514e790257b625c809d7",
-    "CommitMsg": "chore: upgrade GitHub Actions to Node 24 runtimes\n\nBump checkout, setup-python, and upload-artifact so CI no longer runs Node 20 actions on Node 24 runners with deprecation warnings.\n\nCo-authored-by: Cursor \u003ccursoragent@cursor.com\u003e",
+    "Commit": "66ddcfc8a9b24ff843e9127c75e2008026868086",
+    "CommitMsg": "fix: use correct trivy-action tag v0.36.0\n\nCo-authored-by: Cursor \u003ccursoragent@cursor.com\u003e",
     "Author": "Daniel Merkler \u003cdaniel.merkler@de.schunk.com\u003e",
     "Committer": "Daniel Merkler \u003cdaniel.merkler@de.schunk.com\u003e"
   }
