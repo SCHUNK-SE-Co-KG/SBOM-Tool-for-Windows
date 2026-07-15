@@ -44,7 +44,7 @@ if (-not $OutputDir) {
 if (-not $ApprovedFile) {
     $ApprovedFile = Join-Path $ScriptDir "SBOM-Approved-Differences.json"
 }
-$TemplateFile = Join-Path $ScriptDir "SBOM-Vergleichen.html"
+$TemplateFile = Join-Path $ScriptDir "SBOM-Compare.html"
 
 function Select-SbomFile {
     param([string]$Title)

@@ -18,19 +18,19 @@ Developed by **SCHUNK Electronic Solutions GmbH** for CRA compliance on Windows 
 
 | Language | Document |
 |----------|----------|
-| Deutsch | [docs/ANLEITUNG.de.md](docs/ANLEITUNG.de.md) |
+| Deutsch | [docs/GUIDE.de.md](docs/GUIDE.de.md) |
 | English | [docs/GUIDE.en.md](docs/GUIDE.en.md) |
 
-**Quick start:** double-click `SBOM-Erstellen.cmd` to scan · open `SBOM-Vergleichen.html` in a browser to compare two `.cdx.json` files.
+**Quick start:** double-click `SBOM-Create.cmd` to scan · open `SBOM-Compare.html` in a browser to compare two `.cdx.json` files.
 
 ---
 
 ## End-user files
 
 ```
-SBOM-Erstellen.cmd              # One-click full SBOM scan
+SBOM-Create.cmd                 # One-click full SBOM scan
 Get-WindowsSBOM.ps1             # PowerShell engine (called by CMD)
-SBOM-Vergleichen.html           # Browser-based SBOM compare (no install)
+SBOM-Compare.html               # Browser-based SBOM compare (no install)
 SBOM-Approved-Differences.json  # Optional approved-version rules
 assets/logos/                   # SCHUNK branding for HTML reports
 ```
@@ -74,7 +74,7 @@ cd tests
 run_tests.bat
 ```
 
-`Compare-WindowsSBOM.ps1` remains for automated tests and CLI use; end users compare via `SBOM-Vergleichen.html`.
+`Compare-WindowsSBOM.ps1` remains for automated tests and CLI use; end users compare via `SBOM-Compare.html`.
 
 ---
 

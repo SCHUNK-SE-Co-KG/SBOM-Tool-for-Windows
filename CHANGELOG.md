@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.1] - 2026-07-15
+
+### Changed
+- English filenames: `SBOM-Create.cmd`, `SBOM-Compare.html`, `docs/GUIDE.de.md`
+
 ## [1.2.0] - 2026-07-15
 
 ### Added

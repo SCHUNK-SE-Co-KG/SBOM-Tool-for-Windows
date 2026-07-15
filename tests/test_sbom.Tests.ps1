@@ -19,7 +19,7 @@ Describe 'Script inventory' {
     }
 
     It 'contains launcher files' {
-        @('SBOM-Erstellen.cmd', 'SBOM-Vergleichen.html') | ForEach-Object {
+        @('SBOM-Create.cmd', 'SBOM-Compare.html') | ForEach-Object {
             Test-Path (Join-Path $script:RepoRoot $_) | Should -Be $true
         }
     }

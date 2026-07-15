@@ -16,7 +16,7 @@ Portable Tools zur SBOM-Erfassung und zum Vergleich auf Windows 10/11 (CRA / BSI
 ## 1. SBOM erstellen
 
 1. Ordner entpacken oder klonen (z. B. von [Releases](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/releases))
-2. **`SBOM-Erstellen.cmd`** per Doppelklick starten
+2. **`SBOM-Create.cmd`** per Doppelklick starten
 3. Warten bis Scan fertig — HTML-Report öffnet sich automatisch
 4. Ergebnisse liegen in **`sbom-output\`**:
    - `HOSTNAME-sbom-DATUM.cdx.json` — CycloneDX (maschinenlesbar)
@@ -29,7 +29,7 @@ Portable Tools zur SBOM-Erfassung und zum Vergleich auf Windows 10/11 (CRA / BSI
 
 ## 2. SBOM vergleichen
 
-1. **`SBOM-Vergleichen.html`** im Browser öffnen (Doppelklick)
+1. **`SBOM-Compare.html`** im Browser öffnen (Doppelklick)
 2. **Quelle 1** = ältere / Baseline-SBOM (`.cdx.json`)
 3. **Quelle 2** = aktuelle SBOM (`.cdx.json`)
 4. Optional: **`SBOM-Approved-Differences.json`** laden (genehmigte Versionsunterschiede)
@@ -58,9 +58,9 @@ Portable Tools zur SBOM-Erfassung und zum Vergleich auf Windows 10/11 (CRA / BSI
 Mindestens diese Dateien mitnehmen:
 
 ```
-SBOM-Erstellen.cmd
+SBOM-Create.cmd
 Get-WindowsSBOM.ps1
-SBOM-Vergleichen.html
+SBOM-Compare.html
 SBOM-Approved-Differences.json   (optional, falls Regeln vorhanden)
 assets\logos\                    (für Darstellung in HTML)
 ```
