@@ -1,9 +1,95 @@
 {
-  "timestamp": "2026-01-01T00:00:00Z",
+  "timestamp": "2026-07-15T06:43:00Z",
   "repository": "SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows",
-  "dependencies_scanned": 0,
-  "vulnerabilities_found": 0,
+  "dependencies_scanned": 3,
+  "vulnerabilities_found": 6,
   "high_severity_count": 0,
-  "dependencies": [],
-  "vulnerabilities": []
+  "dependencies": [
+    {
+      "name": "pytest",
+      "version": "8.0",
+      "ecosystem": "PyPI",
+      "source": "tests/requirements.txt"
+    },
+    {
+      "name": "pytest-html",
+      "version": "4.0",
+      "ecosystem": "PyPI",
+      "source": "tests/requirements.txt"
+    },
+    {
+      "name": "requests",
+      "version": "2.32.2",
+      "ecosystem": "PyPI",
+      "source": "security/requirements.txt"
+    }
+  ],
+  "vulnerabilities": [
+    {
+      "vuln_id": "GHSA-6w46-j5rx-g56g",
+      "summary": "No description",
+      "severity": "UNKNOWN",
+      "cvss_score": 0.0,
+      "affected_package": "PyPI:pytest@8.0",
+      "affected_versions": "",
+      "fixed_version": "-",
+      "references": [],
+      "aliases": []
+    },
+    {
+      "vuln_id": "PYSEC-2026-1845",
+      "summary": "No description",
+      "severity": "UNKNOWN",
+      "cvss_score": 0.0,
+      "affected_package": "PyPI:pytest@8.0",
+      "affected_versions": "",
+      "fixed_version": "-",
+      "references": [],
+      "aliases": []
+    },
+    {
+      "vuln_id": "GHSA-9hjg-9r4m-mvj7",
+      "summary": "No description",
+      "severity": "UNKNOWN",
+      "cvss_score": 0.0,
+      "affected_package": "PyPI:requests@2.32.2",
+      "affected_versions": "",
+      "fixed_version": "-",
+      "references": [],
+      "aliases": []
+    },
+    {
+      "vuln_id": "GHSA-gc5v-m9x4-r6x2",
+      "summary": "No description",
+      "severity": "UNKNOWN",
+      "cvss_score": 0.0,
+      "affected_package": "PyPI:requests@2.32.2",
+      "affected_versions": "",
+      "fixed_version": "-",
+      "references": [],
+      "aliases": []
+    },
+    {
+      "vuln_id": "PYSEC-2026-1872",
+      "summary": "No description",
+      "severity": "UNKNOWN",
+      "cvss_score": 0.0,
+      "affected_package": "PyPI:requests@2.32.2",
+      "affected_versions": "",
+      "fixed_version": "-",
+      "references": [],
+      "aliases": []
+    },
+    {
+      "vuln_id": "PYSEC-2026-2275",
+      "summary": "No description",
+      "severity": "UNKNOWN",
+      "cvss_score": 0.0,
+      "affected_package": "PyPI:requests@2.32.2",
+      "affected_versions": "",
+      "fixed_version": "-",
+      "references": [],
+      "aliases": []
+    }
+  ]
 }
