@@ -6,7 +6,7 @@
 ![Tests](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/tests.yml/badge.svg?branch=main)
 ![Trivy Scan](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/trivy-scan.yml/badge.svg?branch=main)
 ![CVE-Scan](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/cve-scan.yml/badge.svg?branch=main)
-![Release](https://img.shields.io/github/v/release/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows)
+![Release](https://badgen.net/github/release/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/green)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE.svg)
 ![CycloneDX](https://img.shields.io/badge/CycloneDX-1.6-green.svg)
 
