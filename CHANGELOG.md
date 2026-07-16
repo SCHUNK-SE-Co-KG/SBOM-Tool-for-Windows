@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.3.0] - 2026-07-16
+
+### Added
+- **Illustrated user guides (PDF)** — bilingual DE/EN, step-by-step:
+  - `docs/SBOM-Create-Guide-DE-EN.pdf` — scan workflow, HTML report, admin tip for drivers
+  - `docs/SBOM-Compare-Guide-DE-EN.pdf` — compare, colours, approve rules, Import/Merge/Export JSON, team workflow
+- **Save As export** in `SBOM-Compare.html` — `showSaveFilePicker` with browser-download fallback
+
+### Changed
+- README links to PDF guides (DOCX/build assets stay local only)
+- `.gitignore`: `docs/` tracks **PDFs only** on GitHub
+- Compare sidebar hints updated for Export JSON behaviour
+- Release badge in README (shields.io, works on public repos)
+
+### Removed
+- Legacy markdown guides `docs/GUIDE.de.md` and `docs/GUIDE.en.md` (replaced by PDF guides)
+
 ## [1.2.2] - 2026-07-15
 
 ### Added

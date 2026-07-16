@@ -31,11 +31,17 @@ Desktop.ini
 *.swp
 *.swo
 
+# docs: nur PDF-Anleitungen ins Repo / only PDF guides in repo
+docs/**
+!docs/*.pdf
+
 # Temporaere Pakete / temporary packages
 *.zip
-!docs/**/*.zip
 
 # Secrets
 .env
 *.pem
 *.key
+
+# Lokale Test-Exporte / local test exports (nicht committen)
+expoert.test1.json

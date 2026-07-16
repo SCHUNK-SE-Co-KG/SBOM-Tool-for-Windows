@@ -195,8 +195,8 @@ body.en h1 [data-en],body.en h2 [data-en],body.en h3 [data-en]{display:inline}
   </div>
   <aside class="side">
     <h3><span data-de>Genehmigungen pflegen</span><span data-en>Manage approvals</span></h3>
-    <p class="hint" data-de>Orange Zeilen koennen als genehmigt markiert werden. Export = Master speichern. Merge JSON = Regeln aus zweiter Datei anhaengen (ohne Duplikate).</p>
-    <p class="hint" data-en>Mark orange rows as approved. Export = save master. Merge JSON = append rules from another file (skips duplicates).</p>
+    <p class="hint" data-de>Orange Zeilen genehmigen. Merge JSON = Regeln anhaengen. Export JSON = Speichern-unter-Dialog.</p>
+    <p class="hint" data-en>Approve orange rows. Merge JSON = append rules. Export JSON = Save As dialog.</p>
     <ul class="rule-list" id="ruleList"></ul>
     <button class="btn btn-sm" type="button" id="btnAddRule"><span data-de>+ Regel manuell</span><span data-en>+ Rule manually</span></button>
     <button class="btn btn-sm" type="button" id="btnImportRules"><span data-de>Import JSON</span><span data-en>Import JSON</span></button>
@@ -230,6 +230,7 @@ body.en h1 [data-en],body.en h2 [data-en],body.en h3 [data-en]{display:inline}
 'use strict';
 
 const STORAGE_KEY = 'sbom-approved-rules-v1';
+const EXPORT_FILENAME = 'SBOM-Approved-Differences.json';
 let bom1=null, bom2=null, approved={version:1,comment:'',rules:[]}, rows=[], activeFilter='all', meta={};
 
 function $(id){return document.getElementById(id);}
@@ -257,6 +258,49 @@ function versionMatches(ver, pattern){
     return rx.test(v);
   }
   return v.toLowerCase()===pattern.toLowerCase();
+}
+
+function buildExportPayload(){
+  return {
+    version:1,
+    comment:'Genehmigte Versionsunterschiede / Approved version differences',
+    rules:approved.rules||[]
+  };
+}
+
+function fallbackDownloadExport(text){
+  const en=document.body.classList.contains('en');
+  const blob=new Blob([text],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=EXPORT_FILENAME;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  alert(en
+    ?'File saved via browser download. Tip: enable "Ask where to save each file before downloading" in Edge/Chrome to pick USB stick each time.'
+    :'Datei per Browser-Download gespeichert. Tipp: In Edge/Chrome unter Downloads "Speicherort vor Download fragen" aktivieren — dann USB-Stick waehlen.');
+}
+
+async function exportRulesToFile(){
+  const text=JSON.stringify(buildExportPayload(),null,2);
+  const blob=new Blob([text],{type:'application/json'});
+  if(!window.showSaveFilePicker){
+    fallbackDownloadExport(text);
+    return;
+  }
+  try{
+    const opts={
+      suggestedName:EXPORT_FILENAME,
+      types:[{description:'JSON',accept:{'application/json':['.json']}}]
+    };
+    const fileHandle=await window.showSaveFilePicker(opts);
+    const writable=await fileHandle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+  }catch(err){
+    if(err&&err.name==='AbortError') return;
+    fallbackDownloadExport(text);
+  }
 }
 
 function ruleKey(r){
@@ -489,14 +533,7 @@ $('btnAddRule').onclick=()=>{
   };
 };
 
-$('btnExportRules').onclick=()=>{
-  const out={version:1,comment:'Genehmigte Versionsunterschiede / Approved version differences',rules:approved.rules||[]};
-  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='SBOM-Approved-Differences.json';
-  a.click();
-};
+$('btnExportRules').onclick=()=>{exportRulesToFile();};
 
 $('btnImportRules').onclick=()=>$('importHidden').click();
 $('importHidden').onchange=async e=>{

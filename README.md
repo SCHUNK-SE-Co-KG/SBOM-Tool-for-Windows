@@ -6,7 +6,7 @@
 ![Tests](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/tests.yml/badge.svg?branch=main)
 ![Trivy Scan](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/trivy-scan.yml/badge.svg?branch=main)
 ![CVE-Scan](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/cve-scan.yml/badge.svg?branch=main)
-![Release](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/actions/workflows/release.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE.svg)
 ![CycloneDX](https://img.shields.io/badge/CycloneDX-1.6-green.svg)
 
@@ -16,10 +16,10 @@ Developed by **SCHUNK Electronic Solutions GmbH** for CRA compliance on Windows 
 
 ## User guides
 
-| Language | Document |
-|----------|----------|
-| Deutsch | [docs/GUIDE.de.md](docs/GUIDE.de.md) |
-| English | [docs/GUIDE.en.md](docs/GUIDE.en.md) |
+| Topic | Document (DE + EN) |
+|-------|-------------------|
+| SBOM erstellen / Create | [docs/SBOM-Create-Guide-DE-EN.pdf](docs/SBOM-Create-Guide-DE-EN.pdf) |
+| SBOM vergleichen / Compare | [docs/SBOM-Compare-Guide-DE-EN.pdf](docs/SBOM-Compare-Guide-DE-EN.pdf) |
 
 **Quick start:** double-click `SBOM-Create.cmd` to scan · open `SBOM-Compare.html` in a browser to compare two `.cdx.json` files.
 
