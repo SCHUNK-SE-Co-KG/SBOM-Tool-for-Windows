@@ -1,0 +1,11 @@
+# Diese Datei als Customer-Info.txt kopieren und Werte anpassen.
+# Copy this file to Customer-Info.txt and adjust the values.
+# Encoding / Kodierung: UTF-8
+
+Name=SCHUNK Electronic Solutions GmbH
+AddressLine1=Am Tannwald 17
+AddressLine2=78112 St. Georgen im Schwarzwald
+Country=Deutschland
+Phone=+49-7725-9166-0
+Email=electronic-solutions@de.schunk.com
+URL=https://www.ses-support.de

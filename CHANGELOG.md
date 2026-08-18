@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.4.0] - 2026-08-18
+
+### Added
+- Versioned whitelist exports with stable document ID, revision, and merge-base snapshot
+- Three-way whitelist merge for parallel additions, updates, and deletions
+- Visible merge-conflict resolution; unresolved conflicts block export
+- Per-component `bsi:hashStatus` and explicit hash-coverage reporting
+- `DisplayIcon` executable discovery to improve application hash coverage
+- Store executable and driver INF hash evidence with explicit hash-target metadata
+- Per-source collection status and offline SBOM structural validation
+- Stable component identity for same-name installations from different registry sources
+- Automated headless-browser regression tests for identity and three-way merge behavior
+- Offline SHA-256 runtime-file manifest and verification launcher
+- Optional portable customer branding from `Customer-Info.txt` and an embedded `Customer-Logo.*`
+- Inactive SCHUNK customer-branding examples for downstream deployments
+- Bilingual customer-branding documentation in Markdown and Word format
+
+### Changed
+- Legacy whitelists without revision metadata use backward-compatible additive merge
+- HTML/TXT compliance summaries report measured SHA-512 coverage instead of blanket hash success
+- Supplier, filename, license, and hash completeness are measured in generated reports
+- .NET runtime documentation now reflects registry-based discovery instead of a separate collector
+- Compliance wording distinguishes BSI alignment from formal conformity assessment
+- Generated reports use customer organization data when configured; SCHUNK remains identified as the tool developer
+- Technical CLI, integrity tooling, and fixed logo assets are grouped under `_internal/` for a cleaner portable root folder
+- The CMD launcher is the primary scan entry point; the PowerShell generator is grouped under `_internal/generator/` for advanced use
+- Customer branding documentation describes logo size limits, backups, and version-update migration
+
+### Release notes
+- This release keeps the portable offline workflow and browser-only comparison unchanged for end users.
+- Existing whitelists without revision metadata remain supported.
+- Before updating, back up customer branding, whitelist data, and required reports; install v1.4.0 in a new folder.
+
 ## [1.3.0] - 2026-07-16
 
 ### Added

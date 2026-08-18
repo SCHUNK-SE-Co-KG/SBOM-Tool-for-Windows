@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SCHUNK SBOM Vergleich -/- SBOM Compare</title>
-<link rel="icon" type="image/png" href="assets/logos/SCHUNK_Signet.png">
+<link rel="icon" type="image/png" href="_internal/assets/logos/SCHUNK_Signet.png">
 <!-- PRELOAD -->
 <style>
 :root{
@@ -63,6 +63,14 @@ html.dark .btn-primary{background:var(--schunk-accent);border-color:var(--schunk
 .side{background:var(--card);border-left:1px solid var(--border);padding:1rem;overflow:auto;max-height:calc(100vh - 140px);position:sticky;top:58px}
 .side h3{font-size:.95rem;margin-bottom:.6rem;color:var(--accent);border-bottom:2px solid var(--schunk-accent);padding-bottom:.3rem}
 .side p.hint{font-size:.75rem;color:var(--muted);margin-bottom:.8rem}
+.whitelist-meta{font-size:.72rem;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 9px;margin-bottom:.8rem}
+.conflict-panel{border:1px solid var(--orange);border-radius:6px;margin-bottom:.8rem;overflow:hidden}
+.conflict-panel h4{font-size:.78rem;background:rgba(242,107,67,.15);padding:7px 9px;color:var(--orange)}
+.conflict-list{list-style:none}
+.conflict-list li{padding:8px 9px;border-top:1px solid var(--border);font-size:.72rem}
+.conflict-list .conflict-name{font-weight:700;margin-bottom:2px}
+.conflict-list .conflict-detail{color:var(--muted);margin-bottom:5px}
+.conflict-actions{display:flex;gap:5px;flex-wrap:wrap}
 .rule-list{list-style:none;max-height:320px;overflow:auto;border:1px solid var(--border);border-radius:6px;margin-bottom:.8rem;background:var(--card)}
 .rule-list li{padding:8px 10px;border-bottom:1px solid var(--border);font-size:.78rem}
 .rule-list li:last-child{border-bottom:none}
@@ -124,7 +132,7 @@ body.en h1 [data-en],body.en h2 [data-en],body.en h3 [data-en]{display:inline}
 <body>
 <header>
   <div class="header-brand">
-    <img class="logo-full" src="assets/logos/SCHUNK_Logo_Dark.svg" alt="SCHUNK">
+    <img class="logo-full" src="_internal/assets/logos/SCHUNK_Logo_Dark.svg" alt="SCHUNK">
     <div class="titles">
       <h1><span data-de>SBOM Vergleich</span><span data-en>SBOM Compare</span></h1>
       <div class="sub" id="metaLine">CRA / BSI TR-03183-2 &middot; CycloneDX 1.6 &middot; 3-Spalten-Vergleich</div>
@@ -195,8 +203,13 @@ body.en h1 [data-en],body.en h2 [data-en],body.en h3 [data-en]{display:inline}
   </div>
   <aside class="side">
     <h3><span data-de>Genehmigungen pflegen</span><span data-en>Manage approvals</span></h3>
-    <p class="hint" data-de>Orange Zeilen genehmigen. Merge JSON = Regeln anhaengen. Export JSON = Speichern-unter-Dialog.</p>
-    <p class="hint" data-en>Approve orange rows. Merge JSON = append rules. Export JSON = Save As dialog.</p>
+    <p class="hint" data-de>Orange Zeilen genehmigen. Merge JSON fuehrt parallele Aenderungen zusammen und zeigt Konflikte. Export JSON erzeugt die naechste Revision.</p>
+    <p class="hint" data-en>Approve orange rows. Merge JSON combines parallel changes and shows conflicts. Export JSON creates the next revision.</p>
+    <div class="whitelist-meta" id="whitelistMeta"></div>
+    <div class="conflict-panel" id="conflictPanel" style="display:none">
+      <h4><span data-de>Merge-Konflikte</span><span data-en>Merge conflicts</span></h4>
+      <ul class="conflict-list" id="conflictList"></ul>
+    </div>
     <ul class="rule-list" id="ruleList"></ul>
     <button class="btn btn-sm" type="button" id="btnAddRule"><span data-de>+ Regel manuell</span><span data-en>+ Rule manually</span></button>
     <button class="btn btn-sm" type="button" id="btnImportRules"><span data-de>Import JSON</span><span data-en>Import JSON</span></button>
@@ -231,13 +244,65 @@ body.en h1 [data-en],body.en h2 [data-en],body.en h3 [data-en]{display:inline}
 
 const STORAGE_KEY = 'sbom-approved-rules-v1';
 const EXPORT_FILENAME = 'SBOM-Approved-Differences.json';
-let bom1=null, bom2=null, approved={version:1,comment:'',rules:[]}, rows=[], activeFilter='all', meta={};
+let bom1=null, bom2=null;
+let approved={version:1,documentId:'',revision:0,comment:'',rules:[]};
+let workingBase={documentId:'',revision:0,rules:[]}, mergeConflicts=[];
+let rows=[], activeFilter='all', meta={};
 
 function $(id){return document.getElementById(id);}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function clone(value){return JSON.parse(JSON.stringify(value));}
+
+function newDocumentId(){
+  if(window.crypto&&window.crypto.randomUUID) return 'urn:uuid:'+window.crypto.randomUUID();
+  return 'urn:uuid:'+Date.now().toString(16)+'-'+Math.random().toString(16).slice(2);
+}
+
+function stableRuleId(rule,index){
+  const seed=[rule.name||'',rule.match||'exact',rule.fromVersion||'*',rule.toVersion||'*',rule.anyVersion?'1':'0',index].join('|');
+  let hash=2166136261;
+  for(let i=0;i<seed.length;i++) hash=Math.imul(hash^seed.charCodeAt(i),16777619);
+  return 'legacy-'+(hash>>>0).toString(16);
+}
+
+function normaliseRules(rules){
+  return (rules||[]).map((source,index)=>{
+    const rule=clone(source);
+    if(!rule.id) rule.id=stableRuleId(rule,index);
+    if(!rule.match) rule.match=rule.name.includes('*')?'wildcard':'exact';
+    return rule;
+  });
+}
+
+function normaliseApproved(data){
+  const result=clone(data||{});
+  result.version=1;
+  result.documentId=typeof result.documentId==='string'?result.documentId:'';
+  result.revision=Number.isInteger(result.revision)&&result.revision>=0?result.revision:0;
+  result.comment=typeof result.comment==='string'?result.comment:'';
+  result.rules=normaliseRules(result.rules);
+  if(result.base&&Array.isArray(result.base.rules)){
+    result.base={
+      documentId:result.base.documentId||result.documentId,
+      revision:Number.isInteger(result.base.revision)?result.base.revision:0,
+      rules:normaliseRules(result.base.rules)
+    };
+  }
+  return result;
+}
+
+function setWorkingApproved(data){
+  approved=normaliseApproved(data);
+  if(!approved.documentId) approved.documentId=newDocumentId();
+  workingBase={documentId:approved.documentId,revision:approved.revision,rules:clone(approved.rules)};
+  mergeConflicts=[];
+}
 
 function componentKey(c){
-  return (c.type||'unknown')+'|'+(c.name||'').trim().toLowerCase();
+  const supplier=c.supplier&&c.supplier.name?c.supplier.name:'';
+  const registrySource=(c.properties||[]).find(property=>property.name==='app:registrySource')?.value||'';
+  return [c.type||'unknown',c.name||'',supplier,registrySource]
+    .map(value=>String(value).trim().toLowerCase()).join('|');
 }
 
 function nameMatches(name, pattern, match){
@@ -263,8 +328,12 @@ function versionMatches(ver, pattern){
 function buildExportPayload(){
   return {
     version:1,
-    comment:'Genehmigte Versionsunterschiede / Approved version differences',
-    rules:approved.rules||[]
+    documentId:approved.documentId||newDocumentId(),
+    revision:(approved.revision||0)+1,
+    generatedAt:new Date().toISOString(),
+    comment:approved.comment||'Genehmigte Versionsunterschiede / Approved version differences',
+    base:clone(workingBase),
+    rules:clone(approved.rules||[])
   };
 }
 
@@ -282,6 +351,12 @@ function fallbackDownloadExport(text){
 }
 
 async function exportRulesToFile(){
+  if(mergeConflicts.length){
+    alert(document.body.classList.contains('en')
+      ?'Resolve all merge conflicts before exporting.'
+      :'Vor dem Export alle Merge-Konflikte aufloesen.');
+    return;
+  }
   const text=JSON.stringify(buildExportPayload(),null,2);
   const blob=new Blob([text],{type:'application/json'});
   if(!window.showSaveFilePicker){
@@ -310,18 +385,87 @@ function ruleKey(r){
   return name+'|'+match+'|'+(r.fromVersion||'*')+'|'+(r.toVersion||'*');
 }
 
-function mergeRules(incoming){
-  approved.rules=approved.rules||[];
-  const seen=new Set(approved.rules.map(ruleKey));
-  let added=0, skipped=0;
-  (incoming||[]).forEach(r=>{
-    const k=ruleKey(r);
-    if(seen.has(k)){skipped++;return;}
-    seen.add(k);
-    approved.rules.push(r);
-    added++;
+function comparableRule(rule){
+  if(!rule) return null;
+  return JSON.stringify({
+    id:rule.id||'',name:rule.name||'',match:rule.match||'exact',
+    fromVersion:rule.fromVersion||'*',toVersion:rule.toVersion||'*',
+    anyVersion:!!rule.anyVersion,comment:rule.comment||''
   });
-  return {added, skipped};
+}
+
+function sameRule(left,right){return comparableRule(left)===comparableRule(right);}
+
+function applyRule(ruleId,incomingRule){
+  const index=approved.rules.findIndex(rule=>rule.id===ruleId);
+  if(!incomingRule){
+    if(index>=0) approved.rules.splice(index,1);
+    return;
+  }
+  if(index>=0) approved.rules[index]=clone(incomingRule);
+  else approved.rules.push(clone(incomingRule));
+}
+
+function addMergeConflict(ruleId,currentRule,incomingRule,reason){
+  if(mergeConflicts.some(conflict=>conflict.ruleId===ruleId)) return;
+  mergeConflicts.push({ruleId,currentRule:clone(currentRule),incomingRule:clone(incomingRule),reason});
+}
+
+function mergeThreeWay(incoming){
+  const baseMap=new Map(normaliseRules(incoming.base.rules).map(rule=>[rule.id,rule]));
+  const currentMap=new Map(approved.rules.map(rule=>[rule.id,rule]));
+  const incomingMap=new Map(incoming.rules.map(rule=>[rule.id,rule]));
+  const ids=new Set([...baseMap.keys(),...currentMap.keys(),...incomingMap.keys()]);
+  const result={mode:'three-way',added:0,updated:0,deleted:0,skipped:0,conflicts:0};
+  ids.forEach(ruleId=>{
+    const baseRule=baseMap.get(ruleId)||null;
+    const currentRule=currentMap.get(ruleId)||null;
+    const incomingRule=incomingMap.get(ruleId)||null;
+    const currentChanged=!sameRule(currentRule,baseRule);
+    const incomingChanged=!sameRule(incomingRule,baseRule);
+    if(!incomingChanged){result.skipped++;return;}
+    if(!currentChanged||sameRule(currentRule,incomingRule)){
+      if(!incomingRule) result.deleted++;
+      else if(!currentRule) result.added++;
+      else if(!sameRule(currentRule,incomingRule)) result.updated++;
+      else result.skipped++;
+      applyRule(ruleId,incomingRule);
+      return;
+    }
+    addMergeConflict(ruleId,currentRule,incomingRule,'parallel-change');
+    result.conflicts++;
+  });
+  return result;
+}
+
+function mergeAdditive(incoming){
+  const byId=new Map(approved.rules.map(rule=>[rule.id,rule]));
+  const byKey=new Map(approved.rules.map(rule=>[ruleKey(rule),rule]));
+  const result={mode:'additive',added:0,updated:0,deleted:0,skipped:0,conflicts:0};
+  incoming.rules.forEach(rule=>{
+    const idMatch=byId.get(rule.id);
+    if(idMatch){
+      if(sameRule(idMatch,rule)) result.skipped++;
+      else{
+        addMergeConflict(rule.id,idMatch,rule,'same-id');
+        result.conflicts++;
+      }
+      return;
+    }
+    if(byKey.has(ruleKey(rule))){result.skipped++;return;}
+    approved.rules.push(clone(rule));
+    byId.set(rule.id,rule);byKey.set(ruleKey(rule),rule);result.added++;
+  });
+  return result;
+}
+
+function mergeApproved(incomingData){
+  const incoming=normaliseApproved(incomingData);
+  const sharedBase=incoming.documentId&&incoming.documentId===approved.documentId&&
+    incoming.base&&incoming.base.documentId===approved.documentId;
+  const result=sharedBase?mergeThreeWay(incoming):mergeAdditive(incoming);
+  approved.revision=Math.max(approved.revision||0,incoming.revision||0);
+  return result;
 }
 
 function isApproved(left, right){
@@ -427,8 +571,51 @@ function renderRules(){
   });
 }
 
+function ruleSummary(rule){
+  if(!rule) return document.body.classList.contains('en')?'deleted':'geloescht';
+  return rule.anyVersion?'* → *':(rule.fromVersion||'*')+' → '+(rule.toVersion||'*');
+}
+
+function renderWhitelistMeta(){
+  const revision=approved.revision||0;
+  const nextRevision=revision+1;
+  const id=(approved.documentId||'').replace('urn:uuid:','').slice(0,8)||'legacy';
+  $('whitelistMeta').textContent=(document.body.classList.contains('en')?'Master revision ':'Master-Revision ')+
+    revision+' → '+nextRevision+' · ID '+id;
+}
+
+function renderConflicts(){
+  const panel=$('conflictPanel'),list=$('conflictList');
+  if(!mergeConflicts.length){panel.style.display='none';list.innerHTML='';return;}
+  panel.style.display='block';
+  list.innerHTML=mergeConflicts.map((conflict,index)=>{
+    const currentName=conflict.currentRule?.name||conflict.incomingRule?.name||conflict.ruleId;
+    return '<li><div class="conflict-name">'+esc(currentName)+'</div>'+
+      '<div class="conflict-detail">Master: '+esc(ruleSummary(conflict.currentRule))+
+      ' · Kollege: '+esc(ruleSummary(conflict.incomingRule))+'</div>'+
+      '<div class="conflict-actions"><button class="btn btn-sm" data-conflict-master="'+index+'" type="button">'+
+      (document.body.classList.contains('en')?'Keep master':'Master behalten')+'</button>'+
+      '<button class="btn btn-sm btn-primary" data-conflict-incoming="'+index+'" type="button">'+
+      (document.body.classList.contains('en')?'Use colleague':'Kollege uebernehmen')+'</button></div></li>';
+  }).join('');
+  list.querySelectorAll('[data-conflict-master]').forEach(button=>{
+    button.onclick=()=>resolveMergeConflict(parseInt(button.dataset.conflictMaster,10),false);
+  });
+  list.querySelectorAll('[data-conflict-incoming]').forEach(button=>{
+    button.onclick=()=>resolveMergeConflict(parseInt(button.dataset.conflictIncoming,10),true);
+  });
+}
+
+function resolveMergeConflict(index,useIncoming){
+  const conflict=mergeConflicts[index];
+  if(!conflict) return;
+  if(useIncoming) applyRule(conflict.ruleId,conflict.incomingRule);
+  mergeConflicts.splice(index,1);
+  saveRulesLocal();compare();renderAll();
+}
+
 function renderAll(){
-  renderStats(); renderRows(); renderRules();
+  renderStats();renderRows();renderRules();renderWhitelistMeta();renderConflicts();
 }
 
 function updateMeta(){
@@ -448,24 +635,28 @@ function showResults(){
 
 function loadFromPreload(data){
   bom1=data.bom1; bom2=data.bom2;
-  if(data.approved) approved=JSON.parse(JSON.stringify(data.approved));
+  if(data.approved) setWorkingApproved(validateApproved(JSON.parse(JSON.stringify(data.approved)),'Whitelist'));
+  else if(!restoreLocalApproved()) setWorkingApproved({version:1,rules:[]});
   meta=data.meta||{};
-  mergeLocalRules();
   compare(); updateMeta(); showResults(); renderAll();
 }
 
-function mergeLocalRules(){
+function restoreLocalApproved(){
   try{
     const loc=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
-    if(loc&&loc.rules){
-      const ids=new Set((approved.rules||[]).map(r=>r.id||r.name));
-      loc.rules.forEach(r=>{if(!ids.has(r.id||r.name)){(approved.rules=approved.rules||[]).push(r);}});
+    if(loc&&Array.isArray(loc.rules)){
+      setWorkingApproved(validateApproved(loc,'Local whitelist'));
+      return true;
     }
   }catch(e){}
+  return false;
 }
 
 function saveRulesLocal(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({version:1,rules:approved.rules||[]}));
+  localStorage.setItem(STORAGE_KEY,JSON.stringify({
+    version:1,documentId:approved.documentId,revision:approved.revision,
+    comment:approved.comment||'',rules:approved.rules||[]
+  }));
 }
 
 function readFile(file){
@@ -477,14 +668,48 @@ function readFile(file){
   });
 }
 
+function validateBom(data, fileName){
+  if(!data||data.bomFormat!=='CycloneDX'||!data.specVersion||!Array.isArray(data.components)){
+    throw new Error((fileName||'SBOM')+': invalid CycloneDX SBOM');
+  }
+  return data;
+}
+
+function validateApproved(data, fileName){
+  if(!data||!Array.isArray(data.rules)){
+    throw new Error((fileName||'Whitelist')+': missing rules array');
+  }
+  data.rules.forEach((rule,index)=>{
+    if(!rule||typeof rule.name!=='string'||!rule.name.trim()){
+      throw new Error((fileName||'Whitelist')+': rule '+(index+1)+' has no name');
+    }
+    if(rule.match&&rule.match!=='exact'&&rule.match!=='wildcard'){
+      throw new Error((fileName||'Whitelist')+': invalid match in rule '+(index+1));
+    }
+  });
+  if(data.base&&!Array.isArray(data.base.rules)){
+    throw new Error((fileName||'Whitelist')+': invalid merge base');
+  }
+  return normaliseApproved(data);
+}
+
 async function loadFromPickers(){
   const f1=$('file1').files[0], f2=$('file2').files[0];
   if(!f1||!f2){alert(document.body.classList.contains('en')?'Select both SBOM files.':'Beide SBOM-Dateien waehlen.');return;}
-  bom1=await readFile(f1); bom2=await readFile(f2);
-  if($('fileApproved').files[0]) approved=await readFile($('fileApproved').files[0]);
-  meta={source1:{file:f1.name,componentCount:(bom1.components||[]).length,host:''},
-        source2:{file:f2.name,componentCount:(bom2.components||[]).length,host:''}};
-  mergeLocalRules(); compare(); updateMeta(); showResults(); renderAll();
+  try{
+    bom1=validateBom(await readFile(f1),f1.name);
+    bom2=validateBom(await readFile(f2),f2.name);
+    const approvedFile=$('fileApproved').files[0];
+    if(approvedFile) setWorkingApproved(validateApproved(await readFile(approvedFile),approvedFile.name));
+    else{
+      if(!restoreLocalApproved()) setWorkingApproved({version:1,rules:[]});
+    }
+    meta={source1:{file:f1.name,componentCount:bom1.components.length,host:''},
+          source2:{file:f2.name,componentCount:bom2.components.length,host:''}};
+    compare(); updateMeta(); showResults(); renderAll();
+  }catch(err){
+    alert((document.body.classList.contains('en')?'Invalid input file: ':'Ungueltige Eingabedatei: ')+err.message);
+  }
 }
 
 function openApproveModal(idx){
@@ -538,25 +763,30 @@ $('btnExportRules').onclick=()=>{exportRulesToFile();};
 $('btnImportRules').onclick=()=>$('importHidden').click();
 $('importHidden').onchange=async e=>{
   const f=e.target.files[0]; if(!f) return;
-  const data=await readFile(f);
-  if(data.rules) approved.rules=data.rules;
-  saveRulesLocal(); compare(); renderAll(); e.target.value='';
+  try{
+    const data=validateApproved(await readFile(f),f.name);
+    setWorkingApproved(data);
+    saveRulesLocal(); compare(); renderAll();
+  }catch(err){
+    alert((document.body.classList.contains('en')?'Invalid whitelist: ':'Ungueltige Whitelist: ')+err.message);
+  }
+  e.target.value='';
 };
 
 $('btnMergeRules').onclick=()=>$('mergeHidden').click();
 $('mergeHidden').onchange=async e=>{
   const f=e.target.files[0]; if(!f) return;
   try{
-    const data=await readFile(f);
-    if(!data.rules||!data.rules.length){
+    const data=validateApproved(await readFile(f),f.name);
+    if(!data.rules.length&&!data.base){
       alert(document.body.classList.contains('en')?'No rules in file.':'Keine Regeln in der Datei.');
       return;
     }
-    const {added, skipped}=mergeRules(data.rules);
+    const result=mergeApproved(data);
     saveRulesLocal(); compare(); renderAll();
     const msg=document.body.classList.contains('en')
-      ?('Merged: '+added+' added, '+skipped+' skipped (duplicate).')
-      :('Zusammengefuehrt: '+added+' neu, '+skipped+' uebersprungen (Duplikat).');
+      ?('Merged ('+result.mode+'): '+result.added+' added, '+result.updated+' updated, '+result.deleted+' deleted, '+result.skipped+' unchanged, '+result.conflicts+' conflict(s).')
+      :('Zusammengefuehrt ('+result.mode+'): '+result.added+' neu, '+result.updated+' aktualisiert, '+result.deleted+' geloescht, '+result.skipped+' unveraendert, '+result.conflicts+' Konflikt(e).');
     alert(msg);
   }catch(err){
     alert(document.body.classList.contains('en')?'Invalid JSON file.':'Ungueltige JSON-Datei.');
@@ -583,6 +813,51 @@ try{
   if(localStorage.getItem('sbom-compare-lang')==='en') setLang(true);
   if(localStorage.getItem('sbom-compare-theme')==='dark') setTheme(true);
 }catch(e){}
+
+function runSelfTests(){
+  const results=[];
+  const check=(condition,message)=>{if(!condition) throw new Error(message);results.push(message);};
+  const component=(ref,version,source)=>({
+    type:'application','bom-ref':ref,name:'Same App',version,
+    supplier:{name:'Vendor'},properties:[{name:'app:registrySource',value:source}]
+  });
+  const rule=(id,name,toVersion)=>({id,name,match:'exact',fromVersion:'1',toVersion,anyVersion:false,comment:id});
+  try{
+    bom1={components:[component('old-x64','1','HKLM-x64')]};
+    bom2={components:[component('new-x64','2','HKLM-x64'),component('new-x86','1','HKLM-x86')]};
+    setWorkingApproved({version:1,rules:[]});compare();
+    check(rows.length===2&&rows.filter(row=>row.status==='version-changed').length===1&&rows.filter(row=>row.status==='added').length===1,'component identity');
+
+    const documentId='urn:uuid:self-test';
+    const baseRule=rule('base','Base App','2');
+    const ownerRule=rule('owner','Owner App','2');
+    const colleagueRule=rule('colleague','Colleague App','2');
+    setWorkingApproved({version:1,documentId,revision:2,rules:[baseRule,ownerRule]});
+    let mergeResult=mergeApproved({version:1,documentId,revision:1,base:{documentId,revision:0,rules:[baseRule]},rules:[baseRule,colleagueRule]});
+    check(mergeResult.added===1&&approved.rules.length===3&&mergeConflicts.length===0,'parallel additions');
+
+    setWorkingApproved({version:1,documentId,revision:2,rules:[baseRule,ownerRule]});
+    mergeResult=mergeApproved({version:1,documentId,revision:1,base:{documentId,revision:0,rules:[baseRule]},rules:[]});
+    check(mergeResult.deleted===1&&approved.rules.length===1&&approved.rules[0].id==='owner','branch deletion');
+
+    const masterEdit=rule('base','Base App','3');
+    const colleagueEdit=rule('base','Base App','4');
+    setWorkingApproved({version:1,documentId,revision:2,rules:[masterEdit]});
+    mergeResult=mergeApproved({version:1,documentId,revision:1,base:{documentId,revision:0,rules:[baseRule]},rules:[colleagueEdit]});
+    check(mergeResult.conflicts===1&&mergeConflicts.length===1&&approved.rules[0].toVersion==='3','parallel conflict');
+
+    document.title='SBOM Compare Self-Test PASS';
+    document.body.innerHTML='<pre id="selfTestResult">SELFTEST PASS\n'+esc(results.join('\n'))+'</pre>';
+  }catch(error){
+    document.title='SBOM Compare Self-Test FAIL';
+    document.body.innerHTML='<pre id="selfTestResult">SELFTEST FAIL\n'+esc(error.message)+'</pre>';
+  }
+}
+
+if(location.hash==='#selftest'){
+  runSelfTests();
+  return;
+}
 
 if(window.__PRELOADED__) loadFromPreload(window.__PRELOADED__);
 })();

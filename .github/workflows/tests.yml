@@ -70,8 +70,10 @@ jobs:
         shell: powershell
         run: |
           $scripts = @(
-            'Get-WindowsSBOM.ps1',
-            'Compare-WindowsSBOM.ps1'
+            '_internal/generator/Get-WindowsSBOM.ps1',
+            '_internal/cli/Compare-WindowsSBOM.ps1',
+            '_internal/integrity/New-SBOM-ToolChecksums.ps1',
+            '_internal/integrity/Test-SBOM-ToolIntegrity.ps1'
           )
           $failed = $false
           foreach ($script in $scripts) {

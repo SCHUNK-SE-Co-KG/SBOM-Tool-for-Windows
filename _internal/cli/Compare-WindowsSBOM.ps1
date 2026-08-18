@@ -38,13 +38,14 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 if (-not $OutputDir) {
-    $OutputDir = Join-Path $ScriptDir "sbom-output"
+    $OutputDir = Join-Path $RepoRoot "sbom-output"
 }
 if (-not $ApprovedFile) {
-    $ApprovedFile = Join-Path $ScriptDir "SBOM-Approved-Differences.json"
+    $ApprovedFile = Join-Path $RepoRoot "SBOM-Approved-Differences.json"
 }
-$TemplateFile = Join-Path $ScriptDir "SBOM-Compare.html"
+$TemplateFile = Join-Path $RepoRoot "SBOM-Compare.html"
 
 function Select-SbomFile {
     param([string]$Title)
@@ -52,9 +53,9 @@ function Select-SbomFile {
     $dlg = New-Object System.Windows.Forms.OpenFileDialog
     $dlg.Title = $Title
     $dlg.Filter = "CycloneDX JSON (*.cdx.json;*.json)|*.cdx.json;*.json|Alle Dateien (*.*)|*.*"
-    $dlg.InitialDirectory = if (Test-Path (Join-Path $ScriptDir "sbom-output")) {
-        (Join-Path $ScriptDir "sbom-output")
-    } else { $ScriptDir }
+    $dlg.InitialDirectory = if (Test-Path (Join-Path $RepoRoot "sbom-output")) {
+        (Join-Path $RepoRoot "sbom-output")
+    } else { $RepoRoot }
     if ($dlg.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
         throw "Abgebrochen -/- Cancelled"
     }
@@ -65,13 +66,52 @@ function Read-JsonFile {
     param([string]$Path)
     if (-not (Test-Path $Path)) { throw "Datei nicht gefunden -/- File not found: $Path" }
     $raw = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
-    return ($raw | ConvertFrom-Json)
+    try {
+        return ($raw | ConvertFrom-Json -ErrorAction Stop)
+    } catch {
+        throw "Ungueltige JSON-Datei -/- Invalid JSON file: $Path ($($_.Exception.Message))"
+    }
 }
 
-function Read-JsonText {
-    param([string]$Path, [string]$Fallback = '{"version":1,"rules":[]}')
-    if (-not (Test-Path $Path)) { return $Fallback }
-    return [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8).Trim()
+function Read-SbomFile {
+    param([string]$Path)
+    $bom = Read-JsonFile $Path
+    if (-not $bom.PSObject.Properties['bomFormat'] -or $bom.bomFormat -ne 'CycloneDX') {
+        throw "Keine CycloneDX-SBOM -/- Not a CycloneDX SBOM: $Path"
+    }
+    if (-not $bom.PSObject.Properties['specVersion']) {
+        throw "CycloneDX-Version fehlt -/- CycloneDX version missing: $Path"
+    }
+    if (-not $bom.PSObject.Properties['components']) {
+        throw "Komponentenliste fehlt -/- Components list missing: $Path"
+    }
+    return $bom
+}
+
+function Read-ApprovedFile {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) {
+        return [PSCustomObject]@{ version = 1; rules = @() }
+    }
+    $approved = Read-JsonFile $Path
+    if (-not $approved.PSObject.Properties['rules']) {
+        throw "Whitelist ohne rules-Liste -/- Whitelist has no rules list: $Path"
+    }
+    foreach ($rule in @($approved.rules)) {
+        if (-not $rule.PSObject.Properties['name'] -or [string]::IsNullOrWhiteSpace([string]$rule.name)) {
+            throw "Whitelist-Regel ohne Namen -/- Whitelist rule without name: $Path"
+        }
+        if ($rule.PSObject.Properties['match'] -and $rule.match -notin @('exact', 'wildcard')) {
+            throw "Ungueltiger Whitelist-Match -/- Invalid whitelist match: $($rule.match)"
+        }
+    }
+    return $approved
+}
+
+function ConvertTo-SafeJavaScriptJson {
+    param($Value, [int]$Depth = 100)
+    $json = $Value | ConvertTo-Json -Compress -Depth $Depth
+    return $json.Replace('&', '\u0026').Replace('<', '\u003c').Replace('>', '\u003e')
 }
 
 function Get-SbomLabel {
@@ -114,11 +154,9 @@ if (-not (Test-Path $TemplateFile)) {
     throw "Vorlage fehlt -/- Template missing: $TemplateFile"
 }
 
-$bom1 = Read-JsonFile $Source1
-$bom2 = Read-JsonFile $Source2
-$bom1Text = Read-JsonText $Source1
-$bom2Text = Read-JsonText $Source2
-$approvedText = Read-JsonText $ApprovedFile
+$bom1 = Read-SbomFile $Source1
+$bom2 = Read-SbomFile $Source2
+$approved = Read-ApprovedFile $ApprovedFile
 
 $meta = [ordered]@{
     generated = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
@@ -127,8 +165,11 @@ $meta = [ordered]@{
     approvedFile = (Split-Path $ApprovedFile -Leaf)
 }
 
-$metaJson = ($meta | ConvertTo-Json -Compress -Depth 6) -replace '</', '<\/'
-$preloadJson = "{""bom1"":$bom1Text,""bom2"":$bom2Text,""approved"":$approvedText,""meta"":$metaJson}"
+$bom1Json = ConvertTo-SafeJavaScriptJson $bom1
+$bom2Json = ConvertTo-SafeJavaScriptJson $bom2
+$approvedJson = ConvertTo-SafeJavaScriptJson $approved
+$metaJson = ConvertTo-SafeJavaScriptJson $meta -Depth 6
+$preloadJson = "{""bom1"":$bom1Json,""bom2"":$bom2Json,""approved"":$approvedJson,""meta"":$metaJson}"
 
 $html = [System.IO.File]::ReadAllText($TemplateFile, [System.Text.Encoding]::UTF8)
 $inject = "<script>window.__PRELOADED__=$preloadJson;</script>"
@@ -137,9 +178,9 @@ if ($html -match '<!-- PRELOAD -->') {
 } else {
     $html = $html -replace '</head>', "$inject`n</head>"
 }
-# Reports in sbom-output/ need relative path to assets
-$html = $html -replace 'src="assets/', 'src="../assets/'
-$html = $html -replace 'href="assets/', 'href="../assets/'
+# Reports in sbom-output/ need relative path to internal assets
+$html = $html -replace 'src="_internal/assets/', 'src="../_internal/assets/'
+$html = $html -replace 'href="_internal/assets/', 'href="../_internal/assets/'
 
 if (-not (Test-Path $OutputDir)) {
     New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null

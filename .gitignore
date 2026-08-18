@@ -34,6 +34,8 @@ Desktop.ini
 # docs: nur PDF-Anleitungen ins Repo / only PDF guides in repo
 docs/**
 !docs/*.pdf
+!docs/Customer-Branding-Guide-DE-EN.md
+!docs/Customer-Branding-Guide-DE-EN.docx
 
 # Temporaere Pakete / temporary packages
 *.zip
@@ -45,3 +47,10 @@ docs/**
 
 # Lokale Test-Exporte / local test exports (nicht committen)
 expoert.test1.json
+
+# Lokales Kunden-Branding / local customer branding (Beispiele bleiben versioniert / examples stay tracked)
+Customer-Info.txt
+Customer-Logo.svg
+Customer-Logo.png
+Customer-Logo.jpg
+Customer-Logo.jpeg

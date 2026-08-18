@@ -4,7 +4,8 @@
 
 | Version | Supported / Unterstützt |
 |---------|------------------------|
-| 1.3.x   | Yes / Ja               |
+| 1.4.x   | Yes / Ja               |
+| 1.3.x   | No / Nein              |
 | < 1.3   | No / Nein              |
 
 We maintain security fixes for the **latest release** only. Download the current release from [Releases](https://github.com/SCHUNK-SE-Co-KG/SBOM-Tool-for-Windows/releases).
@@ -43,7 +44,7 @@ We do not operate a bug bounty program for this open-source tool.
 
 **In scope**
 
-- This repository: PowerShell scripts, HTML/JS compare tool, CMD launchers, CI workflows
+- This repository: PowerShell scripts, HTML/JS compare tool, CMD launcher, CI workflows
 - Vulnerabilities that affect users running the portable tool on Windows
 
 **Out of scope**
@@ -60,6 +61,8 @@ We do not operate a bug bounty program for this open-source tool.
 - Treat generated `.cdx.json` / HTML reports as **internal asset data** (installed software inventory).
 - Download releases only from the official GitHub releases page or your organisation’s verified mirror.
 - Verify ZIP integrity via GitHub release assets (SHA-256 digest shown in release metadata when available).
+- On offline systems, run `_internal/integrity/Verify-SBOM-Tool.cmd` before scanning and compare against the trusted `_internal/integrity/SBOM-Tool-SHA256.txt` manifest.
+- The mutable whitelist and active `Customer-Info.txt` / `Customer-Logo.*` branding are deliberately excluded from the tool manifest. Control whitelist changes through the documented revision/merge workflow and protect customer branding files from unauthorised changes.
 
 ---
 

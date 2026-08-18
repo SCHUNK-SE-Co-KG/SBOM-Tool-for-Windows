@@ -1,22 +1,7 @@
 {
   "version": 1,
-  "comment": "Genehmigte Versionsunterschiede / Approved version differences. Pro Regel: name (Softwarename), match (exact|wildcard), fromVersion + toVersion (erlaubter Sprung alt→neu), anyVersion (true = jede Versionsänderung für diesen Namen ok — fromVersion/toVersion dann ignorieren), comment (Notiz). Master-Datei: rules[] aus mehreren JSONs zusammenführen oder „Merge JSON“ im Compare-Tool.",
-  "rules": [
-    {
-      "id": "example-edge-anyversion",
-      "name": "Microsoft Edge",
-      "match": "exact",
-      "anyVersion": true,
-      "comment": "anyVersion:true — jeder Versionswechsel von Edge gilt als genehmigt / any version change for Edge is approved"
-    },
-    {
-      "id": "example-7zip-specific",
-      "name": "7-Zip 24.08",
-      "match": "exact",
-      "fromVersion": "24.08",
-      "toVersion": "24.09",
-      "anyVersion": false,
-      "comment": "Nur dieser konkrete Sprung 24.08→24.09 / Only this specific jump 24.08→24.09"
-    }
-  ]
+  "documentId": "urn:uuid:5fae5a4b-2a6b-46d4-bd39-2f187c981991",
+  "revision": 0,
+  "comment": "Master-Whitelist fuer genehmigte Versionsunterschiede / Master whitelist for approved version differences. Neue Regeln im Vergleich genehmigen, weitere Whitelists mit 'Merge JSON' zusammenfuehren und anschliessend mit 'Export JSON' speichern.",
+  "rules": []
 }
