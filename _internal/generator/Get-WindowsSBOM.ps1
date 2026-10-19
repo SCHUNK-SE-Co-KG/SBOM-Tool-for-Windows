@@ -932,8 +932,7 @@ function New-CdxLicense {
     param([string]$SpdxId, [string]$Acknowledgement = "concluded")
     if ($SpdxId -like "LicenseRef-*" -or $SpdxId -eq "NOASSERTION") {
         return @{
-            license = @{ name = $SpdxId }
-            acknowledgement = $Acknowledgement
+            license = @{ name = $SpdxId; acknowledgement = $Acknowledgement }
         }
     }
     return @{

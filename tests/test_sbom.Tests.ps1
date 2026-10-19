@@ -213,3 +213,25 @@ Describe 'CycloneDX fixtures' {
         @($json.components).Count | Should -BeGreaterThan 0
     }
 }
+
+Describe 'CycloneDX license schema placement' {
+    BeforeAll {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $script:RepoRoot '_internal\generator\Get-WindowsSBOM.ps1'), [ref]$null, [ref]$null)
+        $fn = $ast.Find({ param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'New-CdxLicense' }, $true)
+        . ([scriptblock]::Create($fn.Extent.Text))
+    }
+
+    It 'puts acknowledgement inside license for LicenseRef names' {
+        $entry = New-CdxLicense -SpdxId 'LicenseRef-Proprietary-Microsoft'
+        $entry.ContainsKey('acknowledgement') | Should -Be $false
+        $entry.license.name | Should -Be 'LicenseRef-Proprietary-Microsoft'
+        $entry.license.acknowledgement | Should -Be 'concluded'
+    }
+
+    It 'keeps acknowledgement beside expression for SPDX expressions' {
+        $entry = New-CdxLicense -SpdxId 'MIT' -Acknowledgement 'declared'
+        $entry.expression | Should -Be 'MIT'
+        $entry.acknowledgement | Should -Be 'declared'
+    }
+}

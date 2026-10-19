@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.1] - 2026-10-19
+
+### Fixed
+- CycloneDX 1.6 schema compliance: `acknowledgement` for `LicenseRef-*`/`NOASSERTION` licenses is now written inside the `license` object instead of next to it. Previously Dependency-Track 5.2 rejected the BOM with "Schema validation failed". SPDX `expression` entries are unchanged.
+
+### Added
+- Pester tests for `acknowledgement` placement in license entries
+
+### Upgrade note
+- SBOMs generated with v1.4.0 must be regenerated.
+
 ## [1.4.0] - 2026-08-18
 
 ### Added
